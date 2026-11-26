@@ -1,0 +1,10 @@
+*.import
+.import/
+SAVE_CARTE_PARFAITE_SCELLEE/
+backup_scripts/
+secteurs_nc/
+tuiles_nc/
+nc_batiments.json
+nc_forets.json
+nc_routes.json
+nc_territoire.json

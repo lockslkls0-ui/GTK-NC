@@ -1,0 +1,17 @@
+; Engine configuration file.
+config_version=4
+
+[application]
+config/name="GTK-NC - Grande Terre Kanaky Nouvelle-Caledonie"
+run/main_scene="res://scenes/Main.tscn"
+
+[rendering]
+quality/driver/driver_name="GLES2"
+environment/default_clear_color=Color(0.06, 0.48, 0.62, 1)
+
+[memory]
+
+dynamic_memory/max_size_mb=256
+
+limits/message_queue/max_size_kb=8192
+limits/multithreaded_server/rid_pool_prealloc=65536
