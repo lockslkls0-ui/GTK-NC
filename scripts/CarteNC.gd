@@ -161,11 +161,11 @@ func _draw():
         var pa : Vector2 = a.pop_front()
         var pb : Vector2 = a.pop_front()
         var lg_orig : float = a.pop_front()
-        if pa.distance_to(centre) < 32000.0 or (ir_draw % pas_route == 0):
-            if lg_orig <= 35.0:
-                draw_line(pa, pb, col_piste, max(26.0, zoom_act * 2.4))
-            else:
-                draw_line(pa, pb, col_route, larg_nat)
+        if lg_orig <= 35.0:
+            if pa.distance_to(centre) < 16000.0 and zoom_act < 14.0:
+                draw_line(pa, pb, col_piste, max(26.0, zoom_act * 2.0))
+        elif pa.distance_to(centre) < 32000.0 or (ir_draw % pas_route == 0):
+            draw_line(pa, pb, col_route, larg_nat)
         ir_draw += 1
 
     # 4. Rues et routes locales autour de la caméra
