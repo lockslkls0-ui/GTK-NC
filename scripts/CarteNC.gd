@@ -10,6 +10,7 @@ var tous_tris := []
 var routes_nationales := []
 var routes_locales := []
 var toutes_forets := []
+var tous_arbres := []
 var toutes_rivieres := []
 var tous_sommets := []
 var tris_recifs := []
@@ -113,6 +114,24 @@ func construire_carte(_chemin_json : String):
                 var p2 := Vector2(at.pop_front(), at.pop_front())
                 if p0.distance_to(p1) < 2800.0: segments_plages.append(Array([p0, p1]))
                 if p1.distance_to(p2) < 2800.0: segments_plages.append(Array([p1, p2]))
+    var f_for = File.new()
+    if f_for.open("res://forets_et_arbres_nc.json", File.READ) == OK:
+        var j_for = JSON.parse(f_for.get_as_text())
+        f_for.close()
+        if j_for.error == OK and typeof(j_for.result) == TYPE_DICTIONARY:
+            toutes_forets.clear()
+            for ft in j_for.result.get("forets_tris", []):
+                var aft := Array(ft)
+                if aft.size() >= 8:
+                    var ctr := Vector2(aft.pop_front(), aft.pop_front())
+                    var p0 := Vector2(aft.pop_front(), aft.pop_front())
+                    var p1 := Vector2(aft.pop_front(), aft.pop_front())
+                    var p2 := Vector2(aft.pop_front(), aft.pop_front())
+                    toutes_forets.append(Array([ctr, p0, p1, p2]))
+            for ar in j_for.result.get("arbres", []):
+                var aar := Array(ar)
+                if aar.size() >= 4:
+                    tous_arbres.append(Array([Vector2(aar.pop_front(), aar.pop_front()), aar.pop_front(), int(aar.pop_front())]))
     var f_riv = File.new()
     if f_riv.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:
         var j_riv = JSON.parse(f_riv.get_as_text())
@@ -220,11 +239,34 @@ func _draw():
         a.pop_front()
         draw_colored_polygon(a.pop_front(), col_terre)
 
-    # 2. Forêts visibles dans le champ de caméra
-    var col_foret := Color(0.11, 0.28, 0.12, 0.78)
-    for rf in toutes_forets:
-        if rf.position.distance_to(centre) < rayon_vue * 1.4:
-            draw_rect(rf, col_foret)
+    # 2. Massifs forestiers réels découpés au contour exact (0 débordement en mer)
+    var c_for := PoolColorArray([Color(0.12, 0.30, 0.13, 0.82), Color(0.12, 0.30, 0.13, 0.82), Color(0.12, 0.30, 0.13, 0.82)])
+    for ft in toutes_forets:
+        var aft := Array(ft)
+        var ctr : Vector2 = aft.pop_front()
+        if ctr.distance_to(centre) < rayon_vue * 1.55:
+            var p0 : Vector2 = aft.pop_front()
+            var p1 : Vector2 = aft.pop_front()
+            var p2 : Vector2 = aft.pop_front()
+            draw_primitive(PoolVector2Array([p0, p1, p2]), c_for, PoolVector2Array())
+
+    # 2a. Arbres 2.5D détaillés en vue rapprochée (ombre portée + feuillage en volume)
+    if zoom_act < 3.2:
+        var c_omb_a := Color(0.04, 0.08, 0.04, 0.38)
+        var c_feu_0 := Color(0.10, 0.34, 0.12)
+        var c_feu_1 := Color(0.15, 0.42, 0.14)
+        var c_feu_2 := Color(0.08, 0.28, 0.11)
+        var c_lum_a := Color(0.24, 0.54, 0.18, 0.85)
+        for ar in tous_arbres:
+            var aar := Array(ar)
+            var ap : Vector2 = aar.pop_front()
+            if ap.distance_to(centre) < 4800.0:
+                var ray : float = aar.pop_front()
+                var var_c : int = aar.pop_front()
+                var col_f := c_feu_0 if var_c == 0 else (c_feu_1 if var_c == 1 else c_feu_2)
+                draw_circle(ap + Vector2(ray * 0.45, ray * 0.55), ray * 0.95, c_omb_a)
+                draw_circle(ap, ray, col_f)
+                draw_circle(ap + Vector2(-ray * 0.25, -ray * 0.25), ray * 0.52, c_lum_a)
 
     # 2b. Fleuves, rivières et criques
     var col_riv := Color(0.14, 0.56, 0.88, 0.92)
