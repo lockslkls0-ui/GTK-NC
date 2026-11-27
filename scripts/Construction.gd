@@ -1,6 +1,7 @@
 extends Node2D
 
 var mode_build := 0
+var vertical := false
 var constructions := Array()
 var _t := 0.0
 
@@ -22,32 +23,40 @@ func _input(event):
         var uc : int = event.unicode
         if sc == KEY_1 or sc == KEY_KP_1 or sc == KEY_AMPERSAND or uc == 49 or uc == 38:
             mode_build = 0 if mode_build == 1 else 1
-            m.hud.msg_label.text = "🪵 Mode Construction : Palissade (10 Bois) — Clic droit pour poser" if mode_build == 1 else "Construction désactivée"
+            m.hud.msg_label.text = "🪵 Palissade (10 Bois) — [R]/Molette pivoter | Clic droit poser" if mode_build == 1 else "Construction désactivée"
             get_tree().set_input_as_handled(); update()
         elif sc == KEY_2 or sc == KEY_KP_2 or sc == KEY_EACUTE or uc == 50 or uc == 233:
             mode_build = 0 if mode_build == 2 else 2
-            m.hud.msg_label.text = "🛖 Mode Construction : Faré / Cabane (25 Bois) — Clic droit pour poser" if mode_build == 2 else "Construction désactivée"
+            m.hud.msg_label.text = "🛖 Faré / Cabane (25 Bois) — Clic droit pour poser" if mode_build == 2 else "Construction désactivée"
             get_tree().set_input_as_handled(); update()
         elif sc == KEY_3 or sc == KEY_KP_3 or sc == KEY_QUOTEDBL or uc == 51 or uc == 34:
             mode_build = 0 if mode_build == 3 else 3
-            m.hud.msg_label.text = "🗼 Mode Construction : Tourelle de garde (40 Bois) — Clic droit pour poser" if mode_build == 3 else "Construction désactivée"
+            m.hud.msg_label.text = "🗼 Tourelle de garde (40 Bois) — Clic droit pour poser" if mode_build == 3 else "Construction désactivée"
             get_tree().set_input_as_handled(); update()
-    elif event is InputEventMouseButton and event.pressed and event.button_index == BUTTON_RIGHT and mode_build > 0 and not j.en_vehicule:
-        get_tree().set_input_as_handled()
-        var cout := 10 if mode_build == 1 else (25 if mode_build == 2 else 40)
-        if m.bois < cout:
-            m.hud.msg_label.text = "❌ Pas assez de bois (" + str(m.bois) + "/" + str(cout) + ") — Coupe des arbres avec [C] !"
-            return
-        m.bois -= cout
-        var pos := _cible(j)
-        constructions.append({"type": mode_build, "pos": pos, "cd": 0.0})
-        var bat := StaticBody2D.new(); bat.position = pos
-        var col := CollisionShape2D.new(); var sh := RectangleShape2D.new()
-        sh.extents = Vector2(34, 9) if mode_build == 1 else (Vector2(42, 42) if mode_build == 2 else Vector2(20, 20))
-        col.shape = sh; bat.add_child(col); add_child(bat)
-        if m.get("audio") != null: m.audio.p_ok.play()
-        m.hud.msg_label.text = "✅ Construction posée au premier plan ! Bois restant : " + str(m.bois)
-        update()
+        elif sc == KEY_R and mode_build == 1:
+            vertical = not vertical
+            get_tree().set_input_as_handled(); update()
+    elif event is InputEventMouseButton and event.pressed and mode_build > 0 and not j.en_vehicule:
+        if (event.button_index == BUTTON_WHEEL_UP or event.button_index == BUTTON_WHEEL_DOWN) and mode_build == 1:
+            vertical = not vertical
+            get_tree().set_input_as_handled(); update()
+        elif event.button_index == BUTTON_RIGHT:
+            get_tree().set_input_as_handled()
+            var cout := 10 if mode_build == 1 else (25 if mode_build == 2 else 40)
+            if m.bois < cout:
+                m.hud.msg_label.text = "❌ Pas assez de bois (" + str(m.bois) + "/" + str(cout) + ") — Coupe des arbres avec [C] !"
+                return
+            m.bois -= cout
+            var pos := _cible(j)
+            constructions.append({"type": mode_build, "pos": pos, "vert": vertical, "cd": 0.0})
+            var bat := StaticBody2D.new(); bat.position = pos
+            var col := CollisionShape2D.new(); var sh := RectangleShape2D.new()
+            var ext_p := Vector2(9, 34) if vertical else Vector2(34, 9)
+            sh.extents = ext_p if mode_build == 1 else (Vector2(42, 42) if mode_build == 2 else Vector2(20, 20))
+            col.shape = sh; bat.add_child(col); add_child(bat)
+            if m.get("audio") != null: m.audio.p_ok.play()
+            m.hud.msg_label.text = "✅ Construction posée ! Bois restant : " + str(m.bois)
+            update()
 
 func _process(delta):
     var m = get_parent()
@@ -71,8 +80,9 @@ func _draw():
         var p : Vector2 = c_item["pos"]
         var tp : int = c_item["type"]
         if tp == 1:
-            draw_rect(Rect2(p - Vector2(34, 9), Vector2(68, 18)), Color(0.58, 0.36, 0.14))
-            draw_rect(Rect2(p - Vector2(34, 9), Vector2(68, 18)), Color(0.24, 0.14, 0.05), false, 2.5)
+            var r_p := Rect2(p - Vector2(9, 34), Vector2(18, 68)) if c_item.get("vert", false) else Rect2(p - Vector2(34, 9), Vector2(68, 18))
+            draw_rect(r_p, Color(0.58, 0.36, 0.14))
+            draw_rect(r_p, Color(0.24, 0.14, 0.05), false, 2.5)
         elif tp == 2:
             draw_rect(Rect2(p - Vector2(42, 42), Vector2(84, 84)), Color(0.70, 0.50, 0.22))
             draw_rect(Rect2(p - Vector2(32, 32), Vector2(64, 64)), Color(0.84, 0.64, 0.28))
@@ -87,6 +97,8 @@ func _draw():
     var pos := _cible(j)
     var cout := 10 if mode_build == 1 else (25 if mode_build == 2 else 40)
     var c := Color(0.25, 0.92, 0.45, 0.5) if m.bois >= cout else Color(0.95, 0.25, 0.25, 0.5)
-    if mode_build == 1: draw_rect(Rect2(pos - Vector2(34, 9), Vector2(68, 18)), c)
+    if mode_build == 1:
+        var r_ap := Rect2(pos - Vector2(9, 34), Vector2(18, 68)) if vertical else Rect2(pos - Vector2(34, 9), Vector2(68, 18))
+        draw_rect(r_ap, c)
     elif mode_build == 2: draw_rect(Rect2(pos - Vector2(42, 42), Vector2(84, 84)), c)
     elif mode_build == 3: draw_circle(pos, 22.0, c)
