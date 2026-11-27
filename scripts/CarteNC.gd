@@ -28,7 +28,7 @@ func construire_carte(_chemin_json : String):
     var lat0 := -22.3015
     var lon0 := 166.4410
     var echelle := 1650000.0
-    police_carte = Control.new().get_font("font")
+    var ctrl_f = Control.new(); police_carte = ctrl_f.get_font("font", "Label"); ctrl_f.free()
 
     # 1. Charger la carte parfaite scellée (41 557 triangles côtiers)
     var f_ter = File.new()
@@ -176,8 +176,7 @@ func construire_carte(_chemin_json : String):
                     lbl_t.text = "📍 " + str(t["nom"]).to_upper()
                     lbl_t.rect_position = pos_t
                     lbl_t.add_color_override("font_color", Color(1.0, 0.90, 0.25))
-                    add_child(lbl_t)
-                    labels_communes.append(lbl_t)
+                    lbl_t.queue_free()
     update()
 
 func _process(delta):
@@ -187,7 +186,7 @@ func _process(delta):
         return
     var z_act = 1.0
     if j.cam != null: z_act = j.cam.zoom.x
-    var sc_com = clamp(z_act * 0.65, 1.1, 18.0)
+    var sc_com = clamp(z_act * 0.85, 1.4, 24.0)
     for lc in labels_communes:
         lc.rect_scale = Vector2(sc_com, sc_com)
     if j.position.distance_to(dernier_pos_maj) > 250.0 or abs(z_act - dernier_zoom_maj) > 0.15:
@@ -391,15 +390,27 @@ func _draw():
             draw_rect(Rect2(ctr - d, d * 2.0), col_toit)
         ib += 1
 
-    # 6. Noms détaillés de chaque endroit en zoomant (quartiers, tribus, baies, îlots) avec ombre lisible
-    if police_carte != null and zoom_act < 5.5:
-        var portee_noms := 6500.0 * max(1.0, zoom_act)
-        var col_ombre_txt := Color(0.05, 0.07, 0.08, 0.85)
-        var col_lieu_txt := Color(0.98, 0.96, 0.86)
+    # 6. Noms intelligents selon le zoom : Communes au dézoom + Lieux précis au zoom
+    if police_carte != null:
+        var col_ombre_txt := Color(0.04, 0.06, 0.08, 0.90)
+        var col_com_txt := Color(1.0, 0.90, 0.28)
+        var col_lieu_txt := Color(0.98, 0.96, 0.88)
+        var sc_com := clamp(zoom_act * 2.4, 2.2, 42.0)
+        var sc_lieu := clamp(zoom_act * 1.4, 1.4, 7.5)
         for l in lieux_nommes:
-            if l.get("cat", "") != "commune":
-                var lp : Vector2 = l["pos"]
-                if lp.distance_to(centre) < portee_noms:
-                    var nom_str := str(l["nom"])
-                    draw_string(police_carte, lp + Vector2(2, 2), nom_str, col_ombre_txt)
-                    draw_string(police_carte, lp, nom_str, col_lieu_txt)
+            var lp : Vector2 = l["pos"]
+            var est_com : bool = (l.get("cat", "") == "commune")
+            if est_com:
+                if zoom_act >= 1.6 and lp.distance_to(centre) < rayon_vue * 1.6:
+                    var nom_c := str(l["nom"]).to_upper()
+                    draw_set_transform(lp + Vector2(3.0 * zoom_act, 3.0 * zoom_act), 0.0, Vector2(sc_com, sc_com))
+                    draw_string(police_carte, Vector2.ZERO, nom_c, col_ombre_txt)
+                    draw_set_transform(lp, 0.0, Vector2(sc_com, sc_com))
+                    draw_string(police_carte, Vector2.ZERO, nom_c, col_com_txt)
+            elif zoom_act < 5.5 and lp.distance_to(centre) < 12000.0 * max(1.0, zoom_act):
+                var nom_l := str(l["nom"])
+                draw_set_transform(lp + Vector2(2.0, 2.0), 0.0, Vector2(sc_lieu, sc_lieu))
+                draw_string(police_carte, Vector2.ZERO, nom_l, col_ombre_txt)
+                draw_set_transform(lp, 0.0, Vector2(sc_lieu, sc_lieu))
+                draw_string(police_carte, Vector2.ZERO, nom_l, col_lieu_txt)
+        draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
