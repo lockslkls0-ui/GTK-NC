@@ -177,15 +177,29 @@ func _draw():
         if pa2.distance_to(centre) < rayon_vue:
             draw_line(pa2, pb2, col_route, larg_loc)
 
-    # 5. Tous les 86 714 bâtiments dans le champ de caméra (avec taille minimale visible au dézoom)
-    var col_bat := Color(0.84, 0.56, 0.42)
-    var demi_min := max(2.5, zoom_act * 2.2)
+    # 5. Bâtiments en 2.5D propres (ombres, murs en élévation et toits variés)
+    var demi_min := clamp(zoom_act * 0.55, 2.5, 16.0)
+    var col_ombre_b := Color(0.05, 0.08, 0.06, 0.42)
+    var col_mur_b := Color(0.42, 0.40, 0.37)
+    var col_t0 := Color(0.82, 0.54, 0.40)
+    var col_t1 := Color(0.72, 0.76, 0.80)
+    var col_t2 := Color(0.32, 0.54, 0.74)
+    var col_t3 := Color(0.76, 0.36, 0.28)
+    var ib := 0
     for rb in tous_bats:
         var a := Array(rb)
         var ctr : Vector2 = a.pop_front()
         var dem : Vector2 = a.pop_front()
-        var d := Vector2(max(dem.x * 1.1, demi_min), max(dem.y * 1.1, demi_min))
-        draw_rect(Rect2(ctr - d, d * 2.0), col_bat)
+        var d := Vector2(max(dem.x * 1.05, demi_min), max(dem.y * 1.05, demi_min))
+        var col_toit := col_t0 if (ib % 4 == 0) else (col_t1 if (ib % 4 == 1) else (col_t2 if (ib % 4 == 2) else col_t3))
+        if zoom_act < 3.5 and ctr.distance_to(centre) < 5500.0:
+            var h_b := 8.0 + float((ib * 7) % 14)
+            draw_rect(Rect2(ctr - d + Vector2(h_b * 0.65, h_b * 0.75), d * 2.0), col_ombre_b)
+            draw_rect(Rect2(ctr - d, d * 2.0), col_mur_b)
+            draw_rect(Rect2(ctr - d - Vector2(h_b * 0.35, h_b * 0.70), d * 2.0), col_toit)
+        else:
+            draw_rect(Rect2(ctr - d, d * 2.0), col_toit)
+        ib += 1
 
     # 6. Noms locaux autour du joueur
     if police_carte != null:
