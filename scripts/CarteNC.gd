@@ -10,6 +10,8 @@ var tous_tris := []
 var routes_nationales := []
 var routes_locales := []
 var toutes_forets := []
+var toutes_rivieres := []
+var tous_sommets := []
 var tous_bats := []
 var corps_collisions_actifs := []
 var dernier_pos_maj := Vector2(999999, 999999)
@@ -80,6 +82,23 @@ func construire_carte(_chemin_json : String):
                 nb_batiments += 1
                 centres_batiments.append(cb)
 
+    var f_riv = File.new()
+    if f_riv.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:
+        var j_riv = JSON.parse(f_riv.get_as_text())
+        f_riv.close()
+        if j_riv.error == OK and typeof(j_riv.result) == TYPE_DICTIONARY:
+            for rv in j_riv.result.get("rivieres", []):
+                var arv := Array(rv)
+                var ra := Vector2(arv.pop_front(), arv.pop_front())
+                var rb := Vector2(arv.pop_front(), arv.pop_front())
+                var rlg : float = arv.pop_front() if arv.size() > 0 else 75.0
+                toutes_rivieres.append(Array([ra, rb, rlg]))
+            for sm in j_riv.result.get("sommets", []):
+                var asm := Array(sm)
+                var sp := Vector2(asm.pop_front(), asm.pop_front())
+                var snom := str(asm.pop_front())
+                var sele := str(asm.pop_front())
+                tous_sommets.append(Array([sp, snom, sele]))
     # 3. Charger les 1 111 noms officiels (communes, quartiers, tribus, montagnes, forêts, rivières)
     var f_topo = File.new()
     if f_topo.open("res://nc_toponymes.json", File.READ) == OK:
@@ -145,6 +164,37 @@ func _draw():
     for rf in toutes_forets:
         if rf.position.distance_to(centre) < rayon_vue * 1.4:
             draw_rect(rf, col_foret)
+
+    # 2b. Fleuves, rivières et criques
+    var col_riv := Color(0.14, 0.56, 0.88, 0.92)
+    var pas_riv := 1 if zoom_act <= 8.0 else (2 if zoom_act <= 18.0 else 4)
+    var iriv := 0
+    for rv in toutes_rivieres:
+        var arv := Array(rv)
+        var ra : Vector2 = arv.pop_front()
+        var rb : Vector2 = arv.pop_front()
+        var rlg : float = arv.pop_front()
+        if ra.distance_to(centre) < rayon_vue * 1.3 or (iriv % pas_riv == 0 and rlg >= 70.0):
+            draw_line(ra, rb, col_riv, clamp(max(rlg * 0.65, zoom_act * 2.8), 32.0, 140.0))
+        iriv += 1
+
+    # 2c. Massifs et sommets montagneux avec noms et altitudes liés
+    var col_m_ombre := Color(0.24, 0.20, 0.16, 0.55)
+    var col_m_face := Color(0.46, 0.40, 0.32, 0.82)
+    var col_m_cre := Color(0.66, 0.60, 0.52, 0.90)
+    for sm in tous_sommets:
+        var asm := Array(sm)
+        var sp : Vector2 = asm.pop_front()
+        var snom := str(asm.pop_front())
+        var sele := str(asm.pop_front())
+        if sp.distance_to(centre) < rayon_vue * 1.5:
+            var rm := clamp(zoom_act * 22.0, 160.0, 520.0)
+            draw_circle(sp + Vector2(rm * 0.25, rm * 0.20), rm * 0.85, col_m_ombre)
+            draw_circle(sp, rm * 0.75, col_m_face)
+            draw_circle(sp + Vector2(-rm * 0.15, -rm * 0.20), rm * 0.35, col_m_cre)
+            if police_carte != null and zoom_act < 15.0 and snom != "" and snom != "Sommet":
+                var lbl_s := snom + (" (" + sele + "m)" if sele != "" else "")
+                draw_string(police_carte, sp + Vector2(-36, rm * 0.85 + 14), lbl_s, Color(1.0, 0.86, 0.55))
 
     # 3. Réseau routier intégral & sentiers de brousse (visibles de près comme en vue satellite)
     var col_route := Color(0.18, 0.19, 0.22)
