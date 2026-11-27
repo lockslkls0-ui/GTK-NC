@@ -164,10 +164,12 @@ func _draw():
     if j != null and j.cam != null: zoom_act = j.cam.zoom.x
     var rayon_vue := max(25000.0, 2200.0 * zoom_act)
 
-    # 0. Barrière de corail & Patates de corail (tracé léger 60 FPS)
-    var col_bar := Color(0.16, 0.78, 0.82, 0.72)
-    var col_pat := Color(0.86, 0.74, 0.52, 0.78)
-    var larg_rec := clamp(zoom_act * 6.0, 90.0, 260.0)
+    # 0. Barrière de corail intégrale, hauts-fonds, plages sable & patates (0 rayon étoile)
+    var col_bar := Color(0.12, 0.72, 0.78, 0.78)
+    var col_lag_clair := Color(0.32, 0.86, 0.88, 0.65)
+    var col_plage := Color(0.92, 0.84, 0.60, 0.88)
+    var col_pat := Color(0.86, 0.72, 0.48, 0.82)
+    var larg_rec := clamp(zoom_act * 7.5, 110.0, 320.0)
     var pas_rec := 1 if zoom_act <= 10.0 else (2 if zoom_act <= 22.0 else 4)
     var irec := 0
     for rl in lignes_recifs:
@@ -176,7 +178,9 @@ func _draw():
         var pb : Vector2 = arl.pop_front()
         var eb : int = arl.pop_front()
         if pa.distance_to(centre) < rayon_vue * 1.6 or (irec % pas_rec == 0):
-            draw_line(pa, pb, col_bar if eb == 1 else col_pat, larg_rec if eb == 1 else larg_rec * 0.6)
+            var c_use := col_bar if eb == 1 else (col_lag_clair if eb == 2 else (col_plage if eb == 3 else col_pat))
+            var l_use := larg_rec if eb == 1 else (larg_rec * 0.85 if eb == 2 else (larg_rec * 0.45 if eb == 3 else larg_rec * 0.65))
+            draw_line(pa, pb, c_use, l_use)
         irec += 1
 
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
