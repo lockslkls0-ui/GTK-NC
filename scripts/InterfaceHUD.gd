@@ -73,9 +73,9 @@ func creer_panneaux():
     var lbl_s = Label.new(); lbl_s.text = "🔭 LUNETTE SNIPER x4 (VUE DE FACE) — [B] Quitter la lunette | [Clic D / Espace] Tirer"; lbl_s.rect_position = Vector2(220, 18); lunette_panel.add_child(lbl_s)
     add_child(lunette_panel)
 
-    aide_panel = ColorRect.new(); aide_panel.color = Color(0.06, 0.09, 0.14, 0.96); aide_panel.rect_position = Vector2(190, 140); aide_panel.rect_size = Vector2(640, 360); aide_panel.visible = false
+    aide_panel = ColorRect.new(); aide_panel.color = Color(0.06, 0.09, 0.14, 0.96); aide_panel.rect_position = Vector2(190, 140); aide_panel.rect_size = Vector2(760, 440); aide_panel.visible = false
     var txt = Label.new(); txt.rect_position = Vector2(24, 20)
-    txt.text = "⚙️ COMMANDES — CAILLOU SURVIVAL\n\n🏃 [ZQSD] Bouger | ⚡ [Maj] Sprint | 🔫 [Clic D / Espace] Tirer | 🔄 [R] Recharger / Revivre\n🔀 [Tab] Changer d'arme (5 armes dont Sniper) | 🔭 [B] Lunette Sniper de face\n🪜 [L] Monter à l'échelle (Toit) | 🏠 [V] Entrer Bâtiment | 📦 [E] Fouiller | 🥫 [C] Vivres\n🚙 [F] Véhicule | ⛽ [T] Plein | 🤝 [G] Recruter | 💾 [F5/F9] Sauvegarde | 🗺️ [M] Carte NC"
+    txt.text = "⚙️ COMMANDES OFFICIELLES — GTK-NC (NOUVELLE-CALÉDONIE)\n\n🏃 [ZQSD] ou Flèches : Se déplacer / Conduire / Naviguer | ⚡ [Maj] : Sprint\n🪓 [Clic Gauche] (près d'un arbre) : Couper l'arbre (+5 bois, +12 XP)\n🔫 [Clic Gauche] (visée) ou [Espace] : Tirer | 🔄 [R] : Recharger / Revivre\n🔀 [Tab] : Changer d'arme (5 armes) | 💣 [X] : Poser une bombe (Onde de choc)\n🛖 [1 / 2 / 3] + [Clic Droit] : Construire (1: Palissade | 2: Cabane | 3: Tourelle)\n📦 [E] : Fouiller coffre / Magasin / Station / Dispensaire / Gendarmerie\n🗣️ [Y] : Parler au PNJ & Valider la mission (après action sur le terrain)\n🚙 [F] : Monter / Descendre véhicule ou bateau | ⛽ [T] : Plein & Réparation\n🤝 [G] : Recruter un cousin proche | 📱 [P] : Téléphone/Radio (Parachutage)\n🔥 [B] : Briquet (Feu de camp) | 🔦 [U] : Lampe torche | 🥫 [C] : Manger vivres\n🏠 [K] : Coffre QG | 🪜 [L] : Échelle toit | 🚪 [V] : Entrer | 🗺️ [M] : Carte NC"
     aide_panel.add_child(txt); add_child(aide_panel)
 
     carte_panel = ColorRect.new(); carte_panel.color = Color(0.04, 0.24, 0.36, 0.95); carte_panel.rect_position = Vector2(160, 120); carte_panel.rect_size = Vector2(700, 440); carte_panel.visible = false
