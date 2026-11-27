@@ -146,35 +146,34 @@ func _draw():
         if rf.position.distance_to(centre) < rayon_vue * 1.4:
             draw_rect(rf, col_foret)
 
-    # 3. Réseau routier intégral sans débordement OpenGL (100% détail près de la caméra + 100% continuité en vue satellite)
-    var col_route := Color(0.20, 0.21, 0.24)
-    var larg_nat := max(85.0, zoom_act * 4.2)
-    var pas_route := 1
-    if zoom_act > 18.0:
-        pas_route = 4
-    elif zoom_act > 8.0:
-        pas_route = 2
+    # 3. Réseau routier intégral & sentiers de brousse (visibles de près comme en vue satellite)
+    var col_route := Color(0.18, 0.19, 0.22)
+    var col_bord := Color(0.75, 0.72, 0.65, 0.45)
+    var larg_nat := clamp(zoom_act * 5.5, 85.0, 220.0)
+    var pas_route := 1 if zoom_act <= 10.0 else (2 if zoom_act <= 22.0 else 3)
     var ir_draw := 0
-    var col_piste := Color(0.58, 0.36, 0.22)
+    var col_piste := Color(0.68, 0.44, 0.24, 0.90)
     for r in routes_nationales:
         var a := Array(r)
         var pa : Vector2 = a.pop_front()
         var pb : Vector2 = a.pop_front()
         var lg_orig : float = a.pop_front()
         if lg_orig <= 35.0:
-            if pa.distance_to(centre) < 16000.0 and zoom_act < 14.0:
-                draw_line(pa, pb, col_piste, max(26.0, zoom_act * 2.0))
-        elif pa.distance_to(centre) < 32000.0 or (ir_draw % pas_route == 0):
+            if pa.distance_to(centre) < rayon_vue * 1.1 and zoom_act < 24.0:
+                draw_line(pa, pb, col_piste, clamp(zoom_act * 2.4, 28.0, 75.0))
+        elif pa.distance_to(centre) < rayon_vue * 1.4 or (ir_draw % pas_route == 0):
+            if zoom_act < 4.0:
+                draw_line(pa, pb, col_bord, larg_nat + 18.0)
             draw_line(pa, pb, col_route, larg_nat)
         ir_draw += 1
 
     # 4. Rues et routes locales autour de la caméra
-    var larg_loc := max(44.0, zoom_act * 2.2)
+    var larg_loc := clamp(zoom_act * 2.6, 44.0, 110.0)
     for r2 in routes_locales:
         var a2 := Array(r2)
         var pa2 : Vector2 = a2.pop_front()
         var pb2 : Vector2 = a2.pop_front()
-        if pa2.distance_to(centre) < rayon_vue:
+        if pa2.distance_to(centre) < rayon_vue * 1.1:
             draw_line(pa2, pb2, col_route, larg_loc)
 
     # 5. Bâtiments en 2.5D propres (ombres, murs en élévation et toits variés)
