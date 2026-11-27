@@ -196,18 +196,22 @@ func _draw():
             draw_line(pa, pb, col_plage, larg_plage)
         ipl += 1
 
-    # 0b. Récifs barrières & Patates de corail remplis en volume (autour de la caméra = 60 FPS)
-    var c_bar := PoolColorArray([Color(0.18, 0.80, 0.84, 0.72), Color(0.18, 0.80, 0.84, 0.72), Color(0.18, 0.80, 0.84, 0.72)])
-    var c_pat := PoolColorArray([Color(0.88, 0.76, 0.52, 0.78), Color(0.88, 0.76, 0.52, 0.78), Color(0.88, 0.76, 0.52, 0.78)])
+    # 0b. Bathymétrie complète (Plateau lagon, Tombant barrière, Hauts-fonds, Récifs & Patates)
+    var c_bar := PoolColorArray([Color(0.24, 0.86, 0.86, 0.82), Color(0.24, 0.86, 0.86, 0.82), Color(0.24, 0.86, 0.86, 0.82)])
+    var c_pat := PoolColorArray([Color(0.88, 0.76, 0.50, 0.85), Color(0.88, 0.76, 0.50, 0.85), Color(0.88, 0.76, 0.50, 0.85)])
+    var c_haut := PoolColorArray([Color(0.18, 0.72, 0.80, 0.75), Color(0.18, 0.72, 0.80, 0.75), Color(0.18, 0.72, 0.80, 0.75)])
+    var c_plat := PoolColorArray([Color(0.10, 0.48, 0.66, 0.72), Color(0.10, 0.48, 0.66, 0.72), Color(0.10, 0.48, 0.66, 0.72)])
+    var c_tomb := PoolColorArray([Color(0.07, 0.30, 0.48, 0.78), Color(0.07, 0.30, 0.48, 0.78), Color(0.07, 0.30, 0.48, 0.78)])
     for tr in tris_recifs:
         var atr := Array(tr)
         var ctr : Vector2 = atr.pop_front()
-        if ctr.distance_to(centre) < rayon_vue * 1.45:
+        if ctr.distance_to(centre) < rayon_vue * 1.55:
             var p0 : Vector2 = atr.pop_front()
             var p1 : Vector2 = atr.pop_front()
             var p2 : Vector2 = atr.pop_front()
             var eb : int = atr.pop_front()
-            draw_primitive(PoolVector2Array([p0, p1, p2]), c_bar if eb == 1 else c_pat, PoolVector2Array())
+            var col_use := c_bar if eb == 1 else (c_haut if eb == 2 else (c_plat if eb == 4 else (c_tomb if eb == 5 else c_pat)))
+            draw_primitive(PoolVector2Array([p0, p1, p2]), col_use, PoolVector2Array())
 
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
     var col_terre := Color(0.22, 0.42, 0.20)
