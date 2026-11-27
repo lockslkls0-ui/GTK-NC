@@ -57,13 +57,10 @@ func tirer(origine : Vector2, dir : Vector2, parent_node : Node2D, liste_proj : 
 
 func creer_balle(pos : Vector2, dir : Vector2, vie : float, degats : int, coul : Color, parent_node : Node2D, liste_proj : Array):
     var p = Polygon2D.new()
-    p.polygon = PoolVector2Array([Vector2(-36,-6), Vector2(42,-6), Vector2(42,6), Vector2(-36,6)])
-    p.color = coul
     p.position = pos
     p.rotation = dir.angle()
     p.z_index = 25
     var mat_b = CanvasItemMaterial.new(); mat_b.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD; p.material = mat_b
-    var trait = Polygon2D.new(); trait.polygon = PoolVector2Array([Vector2(-24,-2.5), Vector2(36,-2.5), Vector2(36,2.5), Vector2(-24,2.5)]); trait.color = Color(1, 1, 1, 0.95); p.add_child(trait)
     p.set_meta("dir", dir)
     p.set_meta("vie", vie)
     p.set_meta("degats", degats)

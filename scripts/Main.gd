@@ -1,4 +1,6 @@
 extends Node2D
+
+const ApercuScript = preload("res://monde/ApercuConstruction.gd")
 var LumieresScript = preload("res://scripts/LumieresNuit.gd")
 
 const CarteScript = preload("res://scripts/CarteNC.gd")
@@ -57,15 +59,15 @@ func _ready():
     carte = CarteScript.new(); add_child(carte); carte.construire_carte("res://carte_noumea.json")
     constr = ConstrScript.new(); add_child(constr)
     armes = ArmesScript.new(); add_child(armes)
-    veh = VehiculesScript.new(); add_child(veh); veh.generer_flotte_et_stations()
+    veh = VehiculesScript.new(); veh.z_index = 8; add_child(veh); veh.generer_flotte_et_stations()
     bat = BatimentsScript.new(); add_child(bat)
-    pop = PopScript.new(); add_child(pop); pop.peupler()
+    pop = PopScript.new(); pop.z_index = 9; add_child(pop); pop.peupler()
     monde = MondeScript.new(); add_child(monde); monde.initialiser_trafic(carte.points_routes, carte.lieux_nommes, carte.tous_pois)
     audio = AudioScript.new(); add_child(audio)
     eco = EcoScript.new(); add_child(eco)
     pnj = PnjScript.new(); add_child(pnj)
     chunks = ChunksScript.new(); add_child(chunks)
-    joueur = JoueurScript.new(); add_child(joueur)
+    joueur = JoueurScript.new(); joueur.z_index = 10; add_child(joueur)
     joueur.position = monde.gps_vers_jeu(-21.2652, 165.6159)
     carte.peupler_zone_depart(joueur.position)
     for ic in range(10):
@@ -103,7 +105,7 @@ func _toggle_carte():
 
 func generer_caisses(nb : int):
     for i in range(nb):
-        var c = Node2D.new()
+        var c = Polygon2D.new()
         c.position = Vector2(75, 55) if i == 0 else Vector2(rand_range(-2800, 3200), rand_range(-4500, 2800))
         var vis = Polygon2D.new()
         vis.polygon = PoolVector2Array([Vector2(-15,-15), Vector2(15,-15), Vector2(15,15), Vector2(-15,15)])
@@ -380,10 +382,7 @@ func _input(event):
                         a.set_meta("recrute", true); audio.p_ok.play(); gagner_xp(30.0, "Cousin recruté")
                         hud.msg_label.text = "🤝 Cousin / Allié recruté dans ton équipe !"; break
             KEY_P:
-                if eco.argent >= 1000:
-                    eco.argent -= 1000; eco.explosifs += 1; armes.reserve += 30; bidons += 1; audio.p_ok.play()
-                    hud.msg_label.text = "📱 Radio/Téléphone du Clan (-1000 F) : Parachutage +1 Bombe, +30 Balles, +1 Bidon !"
-                else: hud.msg_label.text = "📱 Radio du Clan : Solde " + str(eco.argent) + " F (1000 F requis)."
+                hud.tel_panel.visible = not hud.tel_panel.visible
             KEY_X: hud.msg_label.text = eco.poser_explosif(joueur.position)
             KEY_K:
                 if not joueur.en_vehicule: hud.msg_label.text = eco.poser_coffre_qg(joueur.position)

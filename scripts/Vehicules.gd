@@ -12,7 +12,7 @@ var fumees := []
 var herses := []
 
 func ajouter_veh(nom : String, places : int, vit : float, coul : Color, w : float, h : float, pos : Vector2):
-    var v = Node2D.new()
+    var v = Polygon2D.new()
     v.position = pos
     var car = Polygon2D.new()
     car.polygon = PoolVector2Array([Vector2(-w,-h), Vector2(w,-h), Vector2(w,h), Vector2(-w,h)])
@@ -57,7 +57,7 @@ func generer_flotte_et_stations():
         dalle.color = Color(0.32, 0.34, 0.38)
         add_child(dalle)
         for dx in [-35, 35]:
-            var pompe = Node2D.new()
+            var pompe = Polygon2D.new()
             pompe.position = sp + Vector2(dx, 0)
             var vis = Polygon2D.new()
             vis.polygon = PoolVector2Array([Vector2(-12,-12), Vector2(12,-12), Vector2(12,12), Vector2(-12,12)])

@@ -28,10 +28,7 @@ func basculer(joueur : KinematicBody2D) -> String:
         return "🚪 Ressorti dans la rue."
     interieur_actif = true
     pos_rue = joueur.position
-    salle = Node2D.new(); salle.position = Vector2(9500, 9500); salle.z_index = 8
-    var sol = Polygon2D.new(); sol.polygon = PoolVector2Array([Vector2(-320,-240), Vector2(320,-240), Vector2(320,240), Vector2(-320,240)]); sol.color = Color(0.26, 0.23, 0.20); salle.add_child(sol)
-    var lit = Polygon2D.new(); lit.position = Vector2(-220, -140); lit.polygon = PoolVector2Array([Vector2(-50,-30), Vector2(50,-30), Vector2(50,30), Vector2(-50,30)]); lit.color = Color(0.2, 0.45, 0.75); salle.add_child(lit)
-    var etabli = Polygon2D.new(); etabli.position = Vector2(200, -140); etabli.polygon = PoolVector2Array([Vector2(-60,-25), Vector2(60,-25), Vector2(60,25), Vector2(-60,25)]); etabli.color = Color(0.55, 0.35, 0.15); salle.add_child(etabli)
+    salle = Polygon2D.new(); salle.position = Vector2(9500, 9500); salle.z_index = 8
     add_child(salle)
     joueur.position = Vector2(9500, 9620)
     return "🏠 INTÉRIEUR DU BÂTIMENT (Lit + Établi) — [E] Fouiller | [V] Sortir"

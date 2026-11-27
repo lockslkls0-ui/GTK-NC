@@ -8,14 +8,10 @@ var allies := []
 var ennemis := []
 
 func creer_humain(coul : Color) -> Node2D:
-    var corps = Node2D.new()
+    var corps = Polygon2D.new()
     var ep = Polygon2D.new()
-    ep.polygon = PoolVector2Array([Vector2(-10,-17), Vector2(10,-17), Vector2(11,17), Vector2(-10,17)])
-    ep.color = coul
     corps.add_child(ep)
     var tete = Polygon2D.new()
-    tete.polygon = PoolVector2Array([Vector2(-7,-8), Vector2(9,-8), Vector2(9,8), Vector2(-7,8)])
-    tete.color = Color(0.92, 0.76, 0.62)
     corps.add_child(tete)
     var f_h = "ennemi.png" if coul.r > 0.7 else "allie.png"
     var th = charger_tex("res://assets/" + f_h)

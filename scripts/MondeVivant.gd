@@ -46,7 +46,7 @@ func initialiser_trafic(pts_routes : Array, lieux_carte : Array = [], liste_pois
     fleche_boussole.z_index = 14
     add_child(fleche_boussole)
 
-    eclaireur_pnj = Node2D.new()
+    eclaireur_pnj = Polygon2D.new()
     eclaireur_pnj.z_index = 9
     eclaireur_pnj.visible = false
     var corp_ecl = Polygon2D.new()
@@ -57,7 +57,7 @@ func initialiser_trafic(pts_routes : Array, lieux_carte : Array = [], liste_pois
 
     generer_nouvelle_mission(pos_depart)
     for i in range(24):
-        var v = Node2D.new()
+        var v = Polygon2D.new()
         var idx_dep = randi() % reseau_routes.size() if reseau_routes.size() > 0 else 0
         var p_dep = reseau_routes[idx_dep] if reseau_routes.size() > 0 else pos_depart + Vector2(i * 180, -220)
         v.position = p_dep; v.z_index = 5

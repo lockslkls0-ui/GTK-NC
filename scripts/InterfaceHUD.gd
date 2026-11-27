@@ -1,5 +1,8 @@
 extends CanvasLayer
 
+const TelScript = preload("res://ui/TelephoneClan.gd")
+var tel_panel : ColorRect
+
 var barre_pv : ColorRect
 var barre_energie : ColorRect
 var barre_essence : ColorRect
@@ -93,7 +96,7 @@ func creer_panneaux():
                 cur_m_c.append(col_m); cur_m_c.append(col_m); cur_m_c.append(col_m)
     if cur_m_s.size() >= 3:
         var scr_m := GDScript.new()
-        scr_m.source_code = "extends Control\nvar s := PoolVector2Array()\nfunc _draw():\n\tvar col := Color(0.28, 0.65, 0.34)\n\tvar i := 0\n\twhile i + 2 < s.size():\n\t\tvar p0 = s[i]; var p1 = s[i+1]; var p2 = s[i+2]\n\t\tif abs((p1 - p0).cross(p2 - p0)) > 12.0:\n\t\t\tdraw_colored_polygon(PoolVector2Array([p0, p1, p2]), col)\n\t\ti += 3\n"
+        scr_m.source_code = "extends Control\nvar s := PoolVector2Array()\nfunc _draw():\n\tvar col := Color(0.28, 0.65, 0.34)\n\tvar i := 0\n\twhile i + 2 < s.size():\n\t\tvar p0 = s[i]; var p1 = s[i+1]; var p2 = s[i+2]\n\t\tif abs((p1 - p0).cross(p2 - p0)) > 12.0:\n\t\t\tdraw_primitive(PoolVector2Array([p0, p1, p2]), PoolColorArray([col, col, col]), PoolVector2Array())\n\t\ti += 3\n"
         scr_m.reload()
         var dessin_m := Control.new()
         dessin_m.set_script(scr_m)
@@ -101,6 +104,7 @@ func creer_panneaux():
         carte_panel.add_child(dessin_m)
     ajouter_ville("📍 Îles Bélep", Vector2(75, 42)); ajouter_ville("📍 Koumac", Vector2(145, 88)); ajouter_ville("📍 [F2] Koné / Pouembout", Vector2(210, 160)); ajouter_ville("📍 Poindimié", Vector2(315, 155)); ajouter_ville("📍 [F3] Bourail", Vector2(295, 238)); ajouter_ville("📍 La Foa", Vector2(382, 272)); ajouter_ville("📍 Dumbéa / Païta", Vector2(432, 302)); ajouter_ville("📍 [F1] Nouméa (QG)", Vector2(455, 336)); ajouter_ville("📍 [F4] Île des Pins", Vector2(525, 396)); ajouter_ville("📍 Ouvéa", Vector2(448, 112)); ajouter_ville("📍 [F6] Lifou (Loyauté)", Vector2(505, 160)); ajouter_ville("📍 Maré", Vector2(582, 222))
     add_child(carte_panel)
+    tel_panel = TelScript.new(); add_child(tel_panel)
 
 func maj_texte(pv : float, en : float, ess : float, est_nuit : bool, vague : int, bois : int, metal : int, bidons : int, vivres : int, arme_nom : String, ch : int, res : int, nb_al : int, veh_nom : String):
     barre_pv.rect_size.x = 190.0 * clamp(pv / 100.0, 0.0, 1.0)
