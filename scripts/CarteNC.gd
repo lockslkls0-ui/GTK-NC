@@ -12,6 +12,7 @@ var routes_locales := []
 var toutes_forets := []
 var toutes_rivieres := []
 var tous_sommets := []
+var lignes_recifs := []
 var tous_bats := []
 var corps_collisions_actifs := []
 var dernier_pos_maj := Vector2(999999, 999999)
@@ -82,6 +83,17 @@ func construire_carte(_chemin_json : String):
                 nb_batiments += 1
                 centres_batiments.append(cb)
 
+    var f_rec = File.new()
+    if f_rec.open("res://recifs_lignes_nc.json", File.READ) == OK:
+        var j_rec = JSON.parse(f_rec.get_as_text())
+        f_rec.close()
+        if j_rec.error == OK and typeof(j_rec.result) == TYPE_DICTIONARY:
+            for rl in j_rec.result.get("lignes", []):
+                var arl := Array(rl)
+                var pa := Vector2(arl.pop_front(), arl.pop_front())
+                var pb := Vector2(arl.pop_front(), arl.pop_front())
+                var eb : int = int(arl.pop_front()) if arl.size() > 0 else 1
+                lignes_recifs.append(Array([pa, pb, eb]))
     var f_riv = File.new()
     if f_riv.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:
         var j_riv = JSON.parse(f_riv.get_as_text())
@@ -151,6 +163,21 @@ func _draw():
     var zoom_act = 1.0
     if j != null and j.cam != null: zoom_act = j.cam.zoom.x
     var rayon_vue := max(25000.0, 2200.0 * zoom_act)
+
+    # 0. Barrière de corail & Patates de corail (tracé léger 60 FPS)
+    var col_bar := Color(0.16, 0.78, 0.82, 0.72)
+    var col_pat := Color(0.86, 0.74, 0.52, 0.78)
+    var larg_rec := clamp(zoom_act * 6.0, 90.0, 260.0)
+    var pas_rec := 1 if zoom_act <= 10.0 else (2 if zoom_act <= 22.0 else 4)
+    var irec := 0
+    for rl in lignes_recifs:
+        var arl := Array(rl)
+        var pa : Vector2 = arl.pop_front()
+        var pb : Vector2 = arl.pop_front()
+        var eb : int = arl.pop_front()
+        if pa.distance_to(centre) < rayon_vue * 1.6 or (irec % pas_rec == 0):
+            draw_line(pa, pb, col_bar if eb == 1 else col_pat, larg_rec if eb == 1 else larg_rec * 0.6)
+        irec += 1
 
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
     var col_terre := Color(0.22, 0.42, 0.20)
