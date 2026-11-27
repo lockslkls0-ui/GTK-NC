@@ -147,20 +147,20 @@ func construire_carte(_chemin_json : String):
                 if aar.size() >= 4:
                     tous_arbres.append(Array([Vector2(aar.pop_front(), aar.pop_front()), aar.pop_front(), int(aar.pop_front())]))
     var f_lac = File.new()
-    if f_lac.open("res://lacs_nc.json", File.READ) == OK:
-        var j_lac = JSON.parse(f_lac.get_as_text())
-        f_lac.close()
-        if j_lac.error == OK and typeof(j_lac.result) == TYPE_DICTIONARY:
-            for lc in j_lac.result.get("lacs", []):
+    if f_lac2.open("res://lacs_nc.json", File.READ) == OK:
+        var j_lac2 = JSON.parse(f_lac2.get_as_text())
+        f_lac2.close()
+        if j_lac2.error == OK and typeof(j_lac2.result) == TYPE_DICTIONARY:
+            for lc in j_lac2.result.get("lacs", []):
                 var alc := Array(lc)
                 if alc.size() >= 4:
                     tous_lacs.append(Array([Vector2(alc.pop_front(), alc.pop_front()), alc.pop_front(), str(alc.pop_front())]))
-    var f_lac = File.new()
-    if f_lac.open("res://lacs_nc.json", File.READ) == OK:
-        var j_lac = JSON.parse(f_lac.get_as_text())
-        f_lac.close()
-        if j_lac.error == OK and typeof(j_lac.result) == TYPE_DICTIONARY:
-            for lt in j_lac.result.get("eau_tris", []):
+    var f_lac2 = File.new()
+    if f_lac2.open("res://lacs_nc.json", File.READ) == OK:
+        var j_lac2 = JSON.parse(f_lac2.get_as_text())
+        f_lac2.close()
+        if j_lac2.error == OK and typeof(j_lac2.result) == TYPE_DICTIONARY:
+            for lt in j_lac2.result.get("eau_tris", []):
                 var alt := Array(lt)
                 if alt.size() >= 9:
                     tous_lacs_tris.append(Array([Vector2(alt.pop_front(), alt.pop_front()), Vector2(alt.pop_front(), alt.pop_front()), Vector2(alt.pop_front(), alt.pop_front()), Vector2(alt.pop_front(), alt.pop_front()), int(alt.pop_front())]))
