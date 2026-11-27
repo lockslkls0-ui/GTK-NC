@@ -12,7 +12,8 @@ var routes_locales := []
 var toutes_forets := []
 var toutes_rivieres := []
 var tous_sommets := []
-var lignes_recifs := []
+var tris_recifs := []
+var segments_plages := []
 var tous_bats := []
 var corps_collisions_actifs := []
 var dernier_pos_maj := Vector2(999999, 999999)
@@ -84,16 +85,34 @@ func construire_carte(_chemin_json : String):
                 centres_batiments.append(cb)
 
     var f_rec = File.new()
-    if f_rec.open("res://recifs_lignes_nc.json", File.READ) == OK:
+    if f_rec.open("res://recifs_nc.json", File.READ) == OK:
         var j_rec = JSON.parse(f_rec.get_as_text())
         f_rec.close()
         if j_rec.error == OK and typeof(j_rec.result) == TYPE_DICTIONARY:
-            for rl in j_rec.result.get("lignes", []):
-                var arl := Array(rl)
-                var pa := Vector2(arl.pop_front(), arl.pop_front())
-                var pb := Vector2(arl.pop_front(), arl.pop_front())
-                var eb : int = int(arl.pop_front()) if arl.size() > 0 else 1
-                lignes_recifs.append(Array([pa, pb, eb]))
+            for rec in j_rec.result.get("recifs", []):
+                var ar := Array(rec)
+                if ar.size() < 8:
+                    continue
+                var ctr := Vector2(ar.pop_front(), ar.pop_front())
+                var p0 := Vector2(ar.pop_front(), ar.pop_front())
+                var p1 := Vector2(ar.pop_front(), ar.pop_front())
+                var p2 := Vector2(ar.pop_front(), ar.pop_front())
+                var eb : int = int(ar.pop_front()) if ar.size() > 0 else 1
+                tris_recifs.append(Array([ctr, p0, p1, p2, eb]))
+    var f_ter2 = File.new()
+    if f_ter2.open("res://terrain_scelle_rapide.json", File.READ) == OK:
+        var j_ter2 = JSON.parse(f_ter2.get_as_text())
+        f_ter2.close()
+        if j_ter2.error == OK and typeof(j_ter2.result) == TYPE_DICTIONARY:
+            for t in j_ter2.result.get("tris", []):
+                var at := Array(t)
+                if at.size() < 8: continue
+                at.pop_front(); at.pop_front()
+                var p0 := Vector2(at.pop_front(), at.pop_front())
+                var p1 := Vector2(at.pop_front(), at.pop_front())
+                var p2 := Vector2(at.pop_front(), at.pop_front())
+                if p0.distance_to(p1) < 2800.0: segments_plages.append(Array([p0, p1]))
+                if p1.distance_to(p2) < 2800.0: segments_plages.append(Array([p1, p2]))
     var f_riv = File.new()
     if f_riv.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:
         var j_riv = JSON.parse(f_riv.get_as_text())
@@ -164,24 +183,31 @@ func _draw():
     if j != null and j.cam != null: zoom_act = j.cam.zoom.x
     var rayon_vue := max(25000.0, 2200.0 * zoom_act)
 
-    # 0. Barrière de corail intégrale, hauts-fonds, plages sable & patates (0 rayon étoile)
-    var col_bar := Color(0.12, 0.72, 0.78, 0.78)
-    var col_lag_clair := Color(0.32, 0.86, 0.88, 0.65)
-    var col_plage := Color(0.92, 0.84, 0.60, 0.88)
-    var col_pat := Color(0.86, 0.72, 0.48, 0.82)
-    var larg_rec := clamp(zoom_act * 7.5, 110.0, 320.0)
-    var pas_rec := 1 if zoom_act <= 10.0 else (2 if zoom_act <= 22.0 else 4)
-    var irec := 0
-    for rl in lignes_recifs:
-        var arl := Array(rl)
-        var pa : Vector2 = arl.pop_front()
-        var pb : Vector2 = arl.pop_front()
-        var eb : int = arl.pop_front()
-        if pa.distance_to(centre) < rayon_vue * 1.6 or (irec % pas_rec == 0):
-            var c_use := col_bar if eb == 1 else (col_lag_clair if eb == 2 else (col_plage if eb == 3 else col_pat))
-            var l_use := larg_rec if eb == 1 else (larg_rec * 0.85 if eb == 2 else (larg_rec * 0.45 if eb == 3 else larg_rec * 0.65))
-            draw_line(pa, pb, c_use, l_use)
-        irec += 1
+    # 0a. Plages dorées et liseré côtier tout autour de la Grande Terre et des Îles
+    var col_plage := Color(0.92, 0.84, 0.58, 0.92)
+    var larg_plage := clamp(zoom_act * 18.0, 48.0, 260.0)
+    var pas_pl := 1 if zoom_act <= 8.0 else (2 if zoom_act <= 18.0 else 4)
+    var ipl := 0
+    for sp in segments_plages:
+        var asp := Array(sp)
+        var pa : Vector2 = asp.pop_front()
+        var pb : Vector2 = asp.pop_front()
+        if pa.distance_to(centre) < rayon_vue * 1.4 or (ipl % pas_pl == 0):
+            draw_line(pa, pb, col_plage, larg_plage)
+        ipl += 1
+
+    # 0b. Récifs barrières & Patates de corail remplis en volume (autour de la caméra = 60 FPS)
+    var c_bar := PoolColorArray([Color(0.18, 0.80, 0.84, 0.72), Color(0.18, 0.80, 0.84, 0.72), Color(0.18, 0.80, 0.84, 0.72)])
+    var c_pat := PoolColorArray([Color(0.88, 0.76, 0.52, 0.78), Color(0.88, 0.76, 0.52, 0.78), Color(0.88, 0.76, 0.52, 0.78)])
+    for tr in tris_recifs:
+        var atr := Array(tr)
+        var ctr : Vector2 = atr.pop_front()
+        if ctr.distance_to(centre) < rayon_vue * 1.45:
+            var p0 : Vector2 = atr.pop_front()
+            var p1 : Vector2 = atr.pop_front()
+            var p2 : Vector2 = atr.pop_front()
+            var eb : int = atr.pop_front()
+            draw_primitive(PoolVector2Array([p0, p1, p2]), c_bar if eb == 1 else c_pat, PoolVector2Array())
 
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
     var col_terre := Color(0.22, 0.42, 0.20)
