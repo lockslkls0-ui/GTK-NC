@@ -2,6 +2,7 @@ extends Node2D
 
 const GpuMesh = preload("res://monde/MaillageCarteGPU.gd")
 const GpuReseau = preload("res://monde/MaillageReseauGPU.gd")
+const NomsLayer = preload("res://monde/CalqueNomsGPU.gd")
 
 var points_routes := []
 var points_cotes := []
@@ -220,6 +221,7 @@ func construire_carte(_chemin_json : String):
                     lbl_t.queue_free()
     GpuMesh.construire_mesh(self)
     GpuReseau.construire_reseau(self)
+    var nl = NomsLayer.new(); add_child(nl); nl.initialiser(tous_pois)
     update()
 
     print("📊 COUCHES ACTIVES -> Terre:", tous_tris.size(), "| Récifs:", tris_recifs.size(), "| Lacs:", tous_lacs_tris.size(), "| Forêts:", toutes_forets.size(), "| Arbres:", tous_arbres.size(), "| Routes:", routes_nationales.size() + routes_locales.size(), "| Bâtiments:", tous_bats.size(), "| Enseignes:", tous_pois.size())
