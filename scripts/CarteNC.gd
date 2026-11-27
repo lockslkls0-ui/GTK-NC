@@ -13,6 +13,7 @@ var routes_locales := []
 var toutes_forets := []
 var tous_arbres := []
 var toutes_rivieres := []
+var tous_lacs_tris := []
 var tous_lacs := []
 var tous_sommets := []
 var tris_relief := []
@@ -154,6 +155,15 @@ func construire_carte(_chemin_json : String):
                 var alc := Array(lc)
                 if alc.size() >= 4:
                     tous_lacs.append(Array([Vector2(alc.pop_front(), alc.pop_front()), alc.pop_front(), str(alc.pop_front())]))
+    var f_lac = File.new()
+    if f_lac.open("res://lacs_nc.json", File.READ) == OK:
+        var j_lac = JSON.parse(f_lac.get_as_text())
+        f_lac.close()
+        if j_lac.error == OK and typeof(j_lac.result) == TYPE_DICTIONARY:
+            for lt in j_lac.result.get("eau_tris", []):
+                var alt := Array(lt)
+                if alt.size() >= 9:
+                    tous_lacs_tris.append(Array([Vector2(alt.pop_front(), alt.pop_front()), Vector2(alt.pop_front(), alt.pop_front()), Vector2(alt.pop_front(), alt.pop_front()), Vector2(alt.pop_front(), alt.pop_front()), int(alt.pop_front())]))
     var f_riv = File.new()
     if f_riv.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:
         var j_riv = JSON.parse(f_riv.get_as_text())
@@ -330,6 +340,21 @@ func _draw():
             draw_circle(lp, ray * 1.12, col_rive_lac)
             draw_circle(lp, ray, col_eau_lac)
             draw_circle(lp + Vector2(-ray * 0.22, -ray * 0.20), ray * 0.55, col_reflet_lac)
+
+    # 2b-bis. Tous les 3 494 lacs, retenues d'eau, marais et piscines au millimètre près
+    var c_lac := PoolColorArray([Color(0.10, 0.44, 0.76, 0.94), Color(0.10, 0.44, 0.76, 0.94), Color(0.10, 0.44, 0.76, 0.94)])
+    var c_marais := PoolColorArray([Color(0.14, 0.46, 0.54, 0.85), Color(0.14, 0.46, 0.54, 0.85), Color(0.14, 0.46, 0.54, 0.85)])
+    var c_piscine := PoolColorArray([Color(0.24, 0.82, 0.96, 0.96), Color(0.24, 0.82, 0.96, 0.96), Color(0.24, 0.82, 0.96, 0.96)])
+    for lt in tous_lacs_tris:
+        var alt := Array(lt)
+        var ctr : Vector2 = alt.pop_front()
+        if ctr.distance_to(centre) < rayon_vue * 1.5:
+            var p0 : Vector2 = alt.pop_front()
+            var p1 : Vector2 = alt.pop_front()
+            var p2 : Vector2 = alt.pop_front()
+            var code : int = alt.pop_front()
+            var col_u := c_piscine if code == 3 else (c_marais if code == 2 else c_lac)
+            draw_primitive(PoolVector2Array([p0, p1, p2]), col_u, PoolVector2Array())
 
     # 2b. Fleuves, rivières et criques
     var col_riv := Color(0.14, 0.56, 0.88, 0.92)
