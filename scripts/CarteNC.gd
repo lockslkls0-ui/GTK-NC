@@ -3,6 +3,7 @@ extends Node2D
 var points_routes := []
 var points_cotes := []
 var lieux_nommes := []
+var tous_pois := []
 var labels_communes := []
 var nb_batiments := 0
 var centres_batiments := []
@@ -146,6 +147,13 @@ func construire_carte(_chemin_json : String):
                 var aar := Array(ar)
                 if aar.size() >= 4:
                     tous_arbres.append(Array([Vector2(aar.pop_front(), aar.pop_front()), aar.pop_front(), int(aar.pop_front())]))
+    var f_poi = File.new()
+    if f_poi.open("res://pois_nc.json", File.READ) == OK:
+        var j_poi = JSON.parse(f_poi.get_as_text())
+        f_poi.close()
+        if j_poi.error == OK and typeof(j_poi.result) == TYPE_DICTIONARY:
+            for p in j_poi.result.get("pois", []):
+                tous_pois.append(Array([Vector2(p["x"], p["y"]), str(p["cat"]), str(p["nom"])]))
     var f_lac2 = File.new()
     if f_lac2.open("res://lacs_nc.json", File.READ) == OK:
         var j_lac2 = JSON.parse(f_lac2.get_as_text())
@@ -256,15 +264,17 @@ func _draw():
     var c_haut := PoolColorArray([Color(0.18, 0.72, 0.80, 0.75), Color(0.18, 0.72, 0.80, 0.75), Color(0.18, 0.72, 0.80, 0.75)])
     var c_plat := PoolColorArray([Color(0.10, 0.48, 0.66, 0.72), Color(0.10, 0.48, 0.66, 0.72), Color(0.10, 0.48, 0.66, 0.72)])
     var c_tomb := PoolColorArray([Color(0.07, 0.30, 0.48, 0.78), Color(0.07, 0.30, 0.48, 0.78), Color(0.07, 0.30, 0.48, 0.78)])
+    var marge_rec := rayon_vue * 1.65
     for tr in tris_recifs:
         var atr := Array(tr)
         var ctr : Vector2 = atr.pop_front()
-        if ctr.distance_to(centre) < rayon_vue * 1.55:
-            var p0 : Vector2 = atr.pop_front()
-            var p1 : Vector2 = atr.pop_front()
-            var p2 : Vector2 = atr.pop_front()
+        var p0 : Vector2 = atr.pop_front()
+        var p1 : Vector2 = atr.pop_front()
+        var p2 : Vector2 = atr.pop_front()
+        if ctr.distance_to(centre) < marge_rec or p0.distance_to(centre) < marge_rec or p1.distance_to(centre) < marge_rec or p2.distance_to(centre) < marge_rec:
             var eb : int = atr.pop_front()
-            var col_use := c_bar if eb == 1 else (c_haut if eb == 2 else (c_plat if eb == 4 else (c_tomb if eb == 5 else c_pat)))
+            var c_plg := PoolColorArray([Color(0.94, 0.86, 0.58, 0.94), Color(0.94, 0.86, 0.58, 0.94), Color(0.94, 0.86, 0.58, 0.94)])
+            var col_use := c_bar if eb == 1 else (c_haut if eb == 2 else (c_plg if eb == 3 else c_pat))
             draw_primitive(PoolVector2Array([p0, p1, p2]), col_use, PoolVector2Array())
 
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
@@ -431,6 +441,47 @@ func _draw():
         else:
             draw_rect(Rect2(ctr - d, d * 2.0), col_toit)
         ib += 1
+
+    # 5b. Symboles vectoriels dédiés à chaque enseigne (Hôpitaux, Police/Gendarmerie, Stations-service, Magasins)
+    var s_ico := clamp(zoom_act * 7.5, 16.0, 72.0)
+    for po in tous_pois:
+        var apo := Array(po)
+        var pp : Vector2 = apo.pop_front()
+        if pp.distance_to(centre) < rayon_vue * 1.25:
+            var cat : String = apo.pop_front()
+            var nom_p : String = apo.pop_front()
+            # Ombre portée sous le symbole
+            draw_circle(pp + Vector2(3.0, 4.0), s_ico * 1.05, Color(0.03, 0.04, 0.06, 0.55))
+            if cat == "hopital":
+                # Écusson blanc + Croix rouge médicale
+                draw_circle(pp, s_ico, Color(0.88, 0.14, 0.16))
+                draw_circle(pp, s_ico * 0.84, Color(0.98, 0.98, 0.99))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.52, s_ico * 0.18), Vector2(s_ico * 1.04, s_ico * 0.36)), Color(0.88, 0.12, 0.14))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.18, s_ico * 0.52), Vector2(s_ico * 0.36, s_ico * 1.04)), Color(0.88, 0.12, 0.14))
+            elif cat == "police":
+                # Insigne bleu marine + Étoile dorée de police/gendarmerie
+                draw_circle(pp, s_ico, Color(0.95, 0.96, 1.0))
+                draw_circle(pp, s_ico * 0.84, Color(0.10, 0.32, 0.78))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.36, s_ico * 0.36), Vector2(s_ico * 0.72, s_ico * 0.72)), Color(0.98, 0.82, 0.18))
+                draw_circle(pp, s_ico * 0.24, Color(0.10, 0.32, 0.78))
+            elif cat == "station":
+                # Pompe à essence orange vif + cadran blanc + pistolet
+                draw_circle(pp, s_ico, Color(0.98, 0.95, 0.90))
+                draw_circle(pp, s_ico * 0.84, Color(0.94, 0.34, 0.10))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.34, s_ico * 0.46), Vector2(s_ico * 0.62, s_ico * 0.92)), Color(0.98, 0.96, 0.92))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.24, s_ico * 0.34), Vector2(s_ico * 0.42, s_ico * 0.28)), Color(0.14, 0.20, 0.26))
+                draw_rect(Rect2(pp + Vector2(s_ico * 0.30, -s_ico * 0.22), Vector2(s_ico * 0.18, s_ico * 0.52)), Color(0.98, 0.84, 0.22))
+            else:
+                # Magasin / Commerce : devanture dorée + store rayé rouge et blanc
+                draw_circle(pp, s_ico, Color(0.98, 0.96, 0.90))
+                draw_circle(pp, s_ico * 0.84, Color(0.92, 0.64, 0.12))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.48, s_ico * 0.36), Vector2(s_ico * 0.96, s_ico * 0.28)), Color(0.86, 0.20, 0.18))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.24, s_ico * 0.36), Vector2(s_ico * 0.20, s_ico * 0.28)), Color(0.98, 0.98, 0.98))
+                draw_rect(Rect2(pp + Vector2(s_ico * 0.12, -s_ico * 0.36), Vector2(s_ico * 0.20, s_ico * 0.28)), Color(0.98, 0.98, 0.98))
+                draw_rect(Rect2(pp - Vector2(s_ico * 0.40, -s_ico * 0.02), Vector2(s_ico * 0.80, s_ico * 0.42)), Color(0.98, 0.94, 0.82))
+            if police_carte != null and zoom_act < 3.5 and nom_p != "":
+                var col_lbl := Color(1.0, 0.45, 0.45) if cat == "hopital" else (Color(0.45, 0.75, 1.0) if cat == "police" else (Color(1.0, 0.60, 0.30) if cat == "station" else Color(1.0, 0.86, 0.38)))
+                draw_string(police_carte, pp + Vector2(s_ico + 8.0, 5.0), nom_p, col_lbl)
 
     # 6. Noms intelligents selon le zoom : Communes au dézoom + Lieux précis au zoom
     if police_carte != null:
