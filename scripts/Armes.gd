@@ -9,6 +9,7 @@ var cooldown := 0.0
 var mode_lunette := false
 
 func _ready():
+    z_index = 20
     chargeurs.append(15); max_charg.append(15)
     chargeurs.append(6); max_charg.append(6)
     chargeurs.append(30); max_charg.append(30)
