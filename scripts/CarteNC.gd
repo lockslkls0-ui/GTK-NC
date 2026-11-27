@@ -13,6 +13,7 @@ var toutes_forets := []
 var tous_arbres := []
 var toutes_rivieres := []
 var tous_sommets := []
+var tris_relief := []
 var tris_recifs := []
 var segments_plages := []
 var tous_bats := []
@@ -114,6 +115,15 @@ func construire_carte(_chemin_json : String):
                 var p2 := Vector2(at.pop_front(), at.pop_front())
                 if p0.distance_to(p1) < 2800.0: segments_plages.append(Array([p0, p1]))
                 if p1.distance_to(p2) < 2800.0: segments_plages.append(Array([p1, p2]))
+    var f_rel = File.new()
+    if f_rel.open("res://relief_nc_couches.json", File.READ) == OK:
+        var j_rel = JSON.parse(f_rel.get_as_text())
+        f_rel.close()
+        if j_rel.error == OK and typeof(j_rel.result) == TYPE_DICTIONARY:
+            for tr in j_rel.result.get("relief", []):
+                var atr := Array(tr)
+                if atr.size() >= 9:
+                    tris_relief.append(Array([Vector2(atr.pop_front(), atr.pop_front()), Vector2(atr.pop_front(), atr.pop_front()), Vector2(atr.pop_front(), atr.pop_front()), Vector2(atr.pop_front(), atr.pop_front()), int(atr.pop_front())]))
     var f_for = File.new()
     if f_for.open("res://forets_et_arbres_nc.json", File.READ) == OK:
         var j_for = JSON.parse(f_for.get_as_text())
@@ -238,6 +248,22 @@ func _draw():
         var a := Array(t)
         a.pop_front()
         draw_colored_polygon(a.pop_front(), col_terre)
+
+    # 1b. Relief topographique de la Chaîne Centrale & Terre rouge latéritique du Sud
+    var c_rel_1 := PoolColorArray([Color(0.26, 0.44, 0.18, 0.55), Color(0.26, 0.44, 0.18, 0.55), Color(0.26, 0.44, 0.18, 0.55)])
+    var c_rel_2 := PoolColorArray([Color(0.36, 0.40, 0.20, 0.68), Color(0.36, 0.40, 0.20, 0.68), Color(0.36, 0.40, 0.20, 0.68)])
+    var c_rel_3 := PoolColorArray([Color(0.48, 0.43, 0.34, 0.78), Color(0.48, 0.43, 0.34, 0.78), Color(0.48, 0.43, 0.34, 0.78)])
+    var c_rel_4 := PoolColorArray([Color(0.62, 0.26, 0.14, 0.68), Color(0.62, 0.26, 0.14, 0.68), Color(0.62, 0.26, 0.14, 0.68)])
+    for tr in tris_relief:
+        var atr := Array(tr)
+        var ctr : Vector2 = atr.pop_front()
+        if ctr.distance_to(centre) < rayon_vue * 1.6:
+            var p0 : Vector2 = atr.pop_front()
+            var p1 : Vector2 = atr.pop_front()
+            var p2 : Vector2 = atr.pop_front()
+            var code : int = atr.pop_front()
+            var col_u := c_rel_4 if code == 4 else (c_rel_3 if code == 3 else (c_rel_2 if code == 2 else c_rel_1))
+            draw_primitive(PoolVector2Array([p0, p1, p2]), col_u, PoolVector2Array())
 
     # 2. Massifs forestiers réels découpés au contour exact (0 débordement en mer)
     var c_for := PoolColorArray([Color(0.12, 0.30, 0.13, 0.82), Color(0.12, 0.30, 0.13, 0.82), Color(0.12, 0.30, 0.13, 0.82)])
