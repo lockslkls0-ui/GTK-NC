@@ -259,10 +259,16 @@ func gerer_combat(delta):
         if en2.get_meta("arme") and en2.position.distance_to(joueur.position) < 420.0 and cd <= 0:
             en2.set_meta("cd", 1.8)
             armes.creer_balle(en2.position, (joueur.position - en2.position).normalized(), 1.0, 10, Color(1.0, 0.2, 0.2), self, projectiles)
-        if joueur.en_vehicule and en2.position.distance_to(joueur.position) < 55.0:
-            en2.queue_free()
-            pop.ennemis.remove(k)
-            bois += 4
+        var veh_roule := Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_Z) or Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_UP) or Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_RIGHT)
+        if joueur.en_vehicule and veh_roule and en2.position.distance_to(joueur.position) < 58.0:
+            en2.queue_free(); pop.ennemis.remove(k); bois += 4; gagner_xp(20.0, "Choc véhicule")
+            continue
+        if joueur.en_vehicule and not veh_roule and en2.position.distance_to(joueur.position) < 52.0 and cd <= 0 and joueur.vehicule_ref != null:
+            en2.set_meta("cd", 1.1)
+            if not joueur.vehicule_ref.has_meta("pv_veh"): joueur.vehicule_ref.set_meta("pv_veh", 100.0)
+            var pv_v2 = max(0.0, joueur.vehicule_ref.get_meta("pv_veh") - 8.0)
+            joueur.vehicule_ref.set_meta("pv_veh", pv_v2)
+            hud.msg_label.text = "⚠️ Un assaillant frappe ton véhicule à l'arrêt ! Vie véhicule : " + str(int(pv_v2)) + "%"
             continue
         if not joueur.en_vehicule and not bat.sur_toit and en2.position.distance_to(joueur.position) < 34.0 and cd <= 0:
             en2.set_meta("cd", 1.0)
@@ -381,6 +387,18 @@ func _input(event):
             KEY_X: hud.msg_label.text = eco.poser_explosif(joueur.position)
             KEY_K:
                 if not joueur.en_vehicule: hud.msg_label.text = eco.poser_coffre_qg(joueur.position)
+            KEY_F1:
+                joueur.position = Vector2(0, 0); hud.carte_panel.visible = false; hud.msg_label.text = "🚁 Voyage rapide : Nouméa (Anse Vata)"
+            KEY_F2:
+                joueur.position = Vector2(-2404668.3, -2049300.0); hud.carte_panel.visible = false; hud.msg_label.text = "🚁 Voyage rapide : Koné / Pouembout"
+            KEY_F3:
+                joueur.position = Vector2(-1440327.9, -1209450.0); hud.carte_panel.visible = false; hud.msg_label.text = "🚁 Voyage rapide : Bourail"
+            KEY_F4:
+                joueur.position = Vector2(1593749.1, 599775.0); hud.carte_panel.visible = false; hud.msg_label.text = "🚤 Voyage rapide : Île des Pins (Kuto)"
+            KEY_F6:
+                joueur.position = Vector2(1209509.1, -2284920.0); hud.carte_panel.visible = false; hud.msg_label.text = "🛩️ Voyage rapide : Lifou (Wé)"
+            KEY_F7:
+                joueur.position = monde.gps_vers_jeu(-21.2652, 165.6159); hud.carte_panel.visible = false; hud.msg_label.text = "🌴 Voyage rapide : Houaïlou (Tribu)"
             KEY_1:
                 outil = 1; hud.msg_label.text = "🔨 Construction [Clic Droit] : 1 = Palissade (10 bois)"
             KEY_2:

@@ -1,53 +1,32 @@
-# 🎮 RAPPORT COMPLET & ARCHITECTURE : CAILLOU SURVIVAL (V0.1)
-**Auteur & Créateur :** lockslkls | **Moteur :** Godot Engine 3.5 (OpenGL 3.3 / GLES2)
-**Plateforme Cible :** Linux (Optimisé Intel Core i3-2350M / Intel HD 3000 / 8 Go RAM)
+# 🌴 CAHIER DES CHARGES & SUIVI INTÉGRAL DE A À Z — GTK-NC (CAILLOU SURVIVAL)
+**Créateur :** lockslkls | **Moteur :** Godot Engine 3.5 (GLES2) | **Territoire :** Grande Terre, Nouméa, Îles Loyauté, Île des Pins, Bélep
 
 ---
 
-## 1. VISION & CONCEPT DU JEU
-**Caillou Survival** est un jeu de **survie urbaine, d'exploration, de stratégie et de barricades** se déroulant sur la **vraie carte géographique de la Nouvelle-Calédonie** (Nouméa, Anse Vata, Brousse, lagon).
-
-### Mécaniques Principales (Boucle Jour / Nuit)
-* **Le Jour (Exploration & Collecte) :**
-  * Le joueur explore les vraies rues et les vrais bâtiments de Nouméa importés depuis OpenStreetMap (`carte_noumea.json`).
-  * Fouille des bâtiments (supermarchés, stations-service, ateliers) pour récolter : **Bois/Palettes**, **Tôle ondulée**, **Carburant**, **Vivres/Eau** et **Composants électriques**.
-* **La Stratégie & Construction (Barricades & Énergie) :**
-  * Pose libre de barricades modulaires dans les rues pour bloquer les accès et créer des goulots d'étranglement.
-  * Gestion d'un **groupe électrogène** (alimentation des projecteurs halogènes et pièges électriques la nuit).
-* **La Nuit (Défense & Survie) :**
-  * Obscurité dynamique (seules les lampes torches, feux de camp et projecteurs éclairent la zone).
-  * Vagues d'assaillants fictifs (drones de sécurité détraqués / créatures de quarantaine nocturne) qui testent la solidité des barricades jusqu'au lever du soleil.
-
----
-
-## 2. ARCHITECTURE TECHNIQUE & OPTIMISATION MATÉRIELLE
-Calibré pour tourner à **60 FPS constants** sans surchauffe CPU sur PC portable modeste :
-* **Moteur Godot 3.5 (Rendu GLES2 / Compatibility)** : Zéro dépendance Vulkan lourde, démarrage en 1 seconde.
-* **Pipeline Cartographique Réel (Python + OpenStreetMap)** :
-  * Extraction des polygones réels des bâtiments (`way["building"]`) et des tracés routiers (`way["highway"]`).
-  * Projection GPS (Latitude/Longitude) vers coordonnées locales en mètres `(X, Y)` centrées sur le quartier choisi.
-* **Rendu 2.5D / Top-Down Stylisé** :
-  * Routes asphaltées, trottoirs, bâtiments avec ombres portées et toitures colorées, eau animée du lagon.
+## ✅ PARTIE 1 : CE QUI EST DÉJÀ FAIT ET VALIDÉ (PALIERS 1 À 14)
+* **Palier 1–4 — Cartographie Réelle Intégrale de la Nouvelle-Calédonie :**
+  * Côtes maître complètes (41 557 triangles), Chaîne Centrale & latérite du Sud, plages dorées avec vagues animées.
+  * 456 594 segments de routes (RT1, RT2, RT3), pistes minières et sentiers de brousse.
+  * 95 550 bâtiments réels en 2.5D avec collisions dynamiques autour du joueur, toits accessibles (`[L]`) et intérieurs (`[V]`).
+* **Palier 5–10 — Hydrographie, Forêts & Relief Réels :**
+  * 52 417 segments de fleuves/rivières/criques, 3 494 lacs/barrages/marais/piscines au millimètre près.
+  * 57 383 triangles de massifs forestiers, 320 122 arbres 2.5D récoltables (`+5 bois` + `12 XP`) et 322 sommets nommés avec altitude.
+* **Palier 11–12 — Enseignes Réelles & Symboles Vectoriels :**
+  * 863+ lieux réels géolocalisés avec icônes dédiées : 631 magasins/commerces, stations-service, 47 postes de police/gendarmeries et 185 hôpitaux/pharmacies/dispensaires (`[E]` pour interagir).
+* **Palier 13–14 — Scénario Tribu Houaïlou, Missions Terrain, XP/Armure/Vie Véhicule & Combat :**
+  * Démarrage en tribu à Houaïlou (Tribu de Nédiouen -> Coutumier Téin à Néâria).
+  * 8 variantes de missions (entraide tribu, ravitaillement magasin, secours dispensaire, convoyage avec 4x4 éclaireur PNJ vert, gendarmerie, secours en mer îlots/Lifou, défense captage) avec **exécution réelle obligatoire + validation par dialogue PNJ `[Y]`**.
+  * Barre d'XP & Niveaux (missions, actions & exploration tous les 500 m), Armure selon équipement (`Tenue Tribu` -> `Gilet Tactique 100%`), Vie des véhicules (`pv_veh`), lampe torche plein jour (`[U]`), briquet feu de camp (`[B]`), balles traçantes lumineuses (`[Clic Gauche]`), bombes avec onde de choc et cratère noir au sol (`[X]`), voyages rapides (`[F1]` à `[F7]`).
 
 ---
 
-## 3. FEUILLE DE ROUTE DE DÉVELOPPEMENT (5 PHASES)
-* **Phase 1 — Moteur Cartographique Réel (En cours) :** Importation de `carte_noumea.json` dans Godot, rendu des vraies routes et bâtiments d'Anse Vata, et déplacement fluide du survivant avec collisions.
-* **Phase 2 — Système de Barricades & Construction :** Inventaire rapide (1 à 5), prévisualisation fantôme au curseur, pose et amélioration des barricades (Bois -> Tôle -> Barbelés/Électrique).
-* **Phase 3 — Cycle Jour/Nuit & Lumières Dynamiques :** Horloge 24h accélérée, assombrissement progressif, lampe torche directionnelle et projecteurs sur groupe électrogène.
-* **Phase 4 — IA des Vagues Nocturnes & Pathfinding :** Navigation intelligente des ennemis autour des bâtiments réels, attaque des barricades et système de réparation.
-* **Phase 5 — Multi-Quartiers NC & Export Standalone :** Sélecteur de quartier (Anse Vata, Centre-Ville, Dumbéa, Koné/Pouembout), sauvegarde de partie et export exécutable Linux/Windows.
-
----
-
-## 4. EXTENSION DU CAHIER DES CHARGES (V0.6 — MÉCANIQUES AVANCÉES)
-* **Territoire Intégral & Chunks Dynamiques (`nc_territoire.json` + `ChunksNC.gd`) :**
-  * Rendu de toute la Grande Terre (Bélep -> Île des Pins) + Îles Loyauté (Ouvéa, Lifou, Maré) et génération infinie de routes, villages de brousse, stations et arbres lors des déplacements.
-* **Verticalité & Intérieurs Réels (`Batiments.gd`) :**
-  * Escalade réelle sur les toits (`[L]`) avec avantage hauteur pour le Sniper (`[B]` lunette optique + décalage caméra) et entrée dans les intérieurs meublés (`[V]`).
-* **Économie, QG Fortifié & Explosifs (`EconomieQG.gd`) :**
-  * Monnaie locale (Francs CFP), Boutique de survie (`[P]`), QG aménageable avec coffre de stockage (`[K]`/`[O]`) et explosifs artisanaux (`[X]`).
-* **Missions Géolocalisées & Dialogues PNJ (`MondeVivant.gd` + `PNJDialogues.gd`) :**
-  * Générateur de 1000+ missions (Sauvetage de civils, Défense chronométrée 25s, Convoi, Station) sur les vrais quartiers de Nouméa avec boussole et dialogues (`[Y]`).
-* **Combat Réel, Balistique & Escouade :**
-  * 5 armes (Pistolet, Pompe, Assaut, Machette, Sniper), tirs ennemis qui blessent le joueur et endommagent les véhicules, et recrutement d'escouade illimité (`[G]`).
+## 🛠️ PARTIE 2 : CE QUI RESTE À FAIRE (PALIERS 15 À 18)
+* **Palier 15 — Trafic & Navigation Vivants (Terre & Mer) :**
+  * Remplacer les voitures simples du trafic par les beaux sprites détaillés (4x4, berlines, bateaux avec passagers dans les ports et sur le lagon) réquisitionnables en marche avec `[F]`.
+  * Densifier la population civile sur Nouméa/Grand Nouméa tout en gardant la brousse calme et authentique.
+* **Palier 16 — Téléphone / Radio Interactif du Clan (`[P]`) & Renforts :**
+  * Interface visuelle de téléphone/radio permettant de recevoir des appels d'urgence des tribus, choisir une mission à distance ou appeler les cousins/le clan en renfort.
+* **Palier 17 — Construction Modulaire de Cabane / Faré & Camp Fortifié :**
+  * Aperçu fantôme au curseur avant pose (`[Clic Droit]`), murs fermés avec porte, établi de fabrication avancée et groupe électrogène.
+* **Palier 18 — Export Exécutable Standalone (Linux / Windows) :**
+  * Empaquetage final `.x86_64` / `.exe` autonome jouable en un double-clic sans ouvrir Godot.

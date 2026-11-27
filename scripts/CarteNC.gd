@@ -24,6 +24,7 @@ var tous_bats := []
 var corps_collisions_actifs := []
 var dernier_pos_maj := Vector2(999999, 999999)
 var dernier_zoom_maj := -1.0
+var secteurs_boises := {}
 var police_carte : Font
 var temps_vagues := 0.0
 
@@ -231,6 +232,17 @@ func _process(delta):
     if j.position.distance_to(dernier_pos_maj) > 250.0 or abs(z_act - dernier_zoom_maj) > 0.15:
         dernier_pos_maj = j.position
         dernier_zoom_maj = z_act
+        var cle_s := str(int(floor(j.position.x / 1800.0))) + "_" + str(int(floor(j.position.y / 1800.0)))
+        if not secteurs_boises.has(cle_s):
+            secteurs_boises[cle_s] = true
+            var nb_loc := 0
+            for ar in tous_arbres:
+                var aar := Array(ar)
+                if aar.pop_front().distance_to(j.position) < 1200.0:
+                    nb_loc += 1
+                    if nb_loc >= 10: break
+            if nb_loc < 10:
+                peupler_zone_depart(j.position)
         for c in corps_collisions_actifs:
             if is_instance_valid(c): c.queue_free()
         corps_collisions_actifs.clear()
@@ -251,7 +263,8 @@ func _process(delta):
         update()
 
 func _draw():
-    var centre := dernier_pos_maj if dernier_pos_maj.x < 900000.0 else Vector2.ZERO
+    var j_cam = get_parent().joueur if get_parent() != null else null
+    var centre : Vector2 = j_cam.position if j_cam != null else (dernier_pos_maj if dernier_pos_maj.x < 900000.0 else Vector2.ZERO)
     var j = get_parent().joueur
     var zoom_act = 1.0
     if j != null and j.cam != null: zoom_act = j.cam.zoom.x
