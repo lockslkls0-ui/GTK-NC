@@ -21,6 +21,7 @@ var corps_collisions_actifs := []
 var dernier_pos_maj := Vector2(999999, 999999)
 var dernier_zoom_maj := -1.0
 var police_carte : Font
+var temps_vagues := 0.0
 
 func construire_carte(_chemin_json : String):
     var lat0 := -22.3015
@@ -177,7 +178,8 @@ func construire_carte(_chemin_json : String):
                     add_child(lbl_t)
     update()
 
-func _process(_delta):
+func _process(delta):
+    temps_vagues += delta
     var j = get_parent().get_node_or_null("Joueur")
     if j == null:
         return
@@ -212,9 +214,12 @@ func _draw():
     if j != null and j.cam != null: zoom_act = j.cam.zoom.x
     var rayon_vue := max(25000.0, 2200.0 * zoom_act)
 
-    # 0a. Plages dorées et liseré côtier tout autour de la Grande Terre et des Îles
+    # 0a. Plages dorées + Animation des vagues et de l'écume côtière
     var col_plage := Color(0.92, 0.84, 0.58, 0.92)
     var larg_plage := clamp(zoom_act * 18.0, 48.0, 260.0)
+    var onde_vague := 0.5 + 0.5 * sin(temps_vagues * 2.1)
+    var col_ecume := Color(0.92, 0.98, 1.0, 0.25 + 0.30 * onde_vague)
+    var larg_ecume := larg_plage + 18.0 + 26.0 * onde_vague
     var pas_pl := 1 if zoom_act <= 8.0 else (2 if zoom_act <= 18.0 else 4)
     var ipl := 0
     for sp in segments_plages:
@@ -222,6 +227,8 @@ func _draw():
         var pa : Vector2 = asp.pop_front()
         var pb : Vector2 = asp.pop_front()
         if pa.distance_to(centre) < rayon_vue * 1.4 or (ipl % pas_pl == 0):
+            if zoom_act < 6.0 and pa.distance_to(centre) < 9000.0:
+                draw_line(pa, pb, col_ecume, larg_ecume)
             draw_line(pa, pb, col_plage, larg_plage)
         ipl += 1
 
