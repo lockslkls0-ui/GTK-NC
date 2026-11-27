@@ -1,5 +1,8 @@
 extends Node2D
 
+const GpuMesh = preload("res://monde/MaillageCarteGPU.gd")
+const GpuReseau = preload("res://monde/MaillageReseauGPU.gd")
+
 var points_routes := []
 var points_cotes := []
 var lieux_nommes := []
@@ -13,6 +16,8 @@ var routes_nationales := []
 var routes_locales := []
 var toutes_forets := []
 var tous_arbres := []
+var grille_arbres_rapide := {}
+var grille_bats_rapide := {}
 var toutes_rivieres := []
 var tous_lacs_tris := []
 var tous_lacs := []
@@ -183,6 +188,20 @@ func construire_carte(_chemin_json : String):
                 var snom := str(asm.pop_front())
                 var sele := str(asm.pop_front())
                 tous_sommets.append(Array([sp, snom, sele]))
+    var f_rt = File.new()
+    if f_rt.open("res://triangulation/nc_reseau_arbres.bin", File.READ) == OK:
+        routes_nationales.clear(); routes_locales.clear()
+        var nr : int = f_rt.get_32(); var _nb : int = f_rt.get_32(); var _nrv : int = f_rt.get_32(); var _na : int = f_rt.get_32()
+        for ir in range(nr):
+            var pa := Vector2(f_rt.get_float(), f_rt.get_float())
+            var pb := Vector2(f_rt.get_float(), f_rt.get_float())
+            var lg : float = f_rt.get_float()
+            var seg := Array(); seg.append(pa); seg.append(pb); seg.append(lg)
+            if lg <= 35.0: routes_locales.append(seg)
+            else: routes_nationales.append(seg)
+            if ir % 15 == 0: points_routes.append(pa)
+        f_rt.close()
+
     # 3. Charger les 1 111 noms officiels (communes, quartiers, tribus, montagnes, forêts, rivières)
     var f_topo = File.new()
     if f_topo.open("res://nc_toponymes.json", File.READ) == OK:
@@ -199,7 +218,23 @@ func construire_carte(_chemin_json : String):
                     lbl_t.rect_position = pos_t
                     lbl_t.add_color_override("font_color", Color(1.0, 0.90, 0.25))
                     lbl_t.queue_free()
+    GpuMesh.construire_mesh(self)
+    GpuReseau.construire_reseau(self)
     update()
+
+    print("📊 COUCHES ACTIVES -> Terre:", tous_tris.size(), "| Récifs:", tris_recifs.size(), "| Lacs:", tous_lacs_tris.size(), "| Forêts:", toutes_forets.size(), "| Arbres:", tous_arbres.size(), "| Routes:", routes_nationales.size() + routes_locales.size(), "| Bâtiments:", tous_bats.size(), "| Enseignes:", tous_pois.size())
+    for ar in tous_arbres:
+        var aar := Array(ar)
+        var ap : Vector2 = aar.pop_front()
+        var cl := str(int(floor(ap.x / 8000.0))) + "_" + str(int(floor(ap.y / 8000.0)))
+        if not grille_arbres_rapide.has(cl): grille_arbres_rapide[cl] = Array()
+        grille_arbres_rapide[cl].append(ar)
+    for rb in tous_bats:
+        var ab := Array(rb)
+        var cb : Vector2 = ab.pop_front()
+        var clb := str(int(floor(cb.x / 12000.0))) + "_" + str(int(floor(cb.y / 12000.0)))
+        if not grille_bats_rapide.has(clb): grille_bats_rapide[clb] = Array()
+        grille_bats_rapide[clb].append(rb)
 
 func recolter_arbre_proche(pos_j : Vector2, rayon : float = 110.0) -> int:
     for i in range(tous_arbres.size() - 1, -1, -1):
@@ -312,10 +347,11 @@ func _draw():
 
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
     var col_terre := Color(0.22, 0.42, 0.20)
+    var c_ter := PoolColorArray([col_terre, col_terre, col_terre])
     for t in tous_tris:
         var a := Array(t)
         a.pop_front()
-        draw_colored_polygon(a.pop_front(), col_terre)
+        draw_primitive(a.pop_front(), c_ter, PoolVector2Array())
 
     # 1b. Relief topographique de la Chaîne Centrale & Terre rouge latéritique du Sud
     var c_rel_1 := PoolColorArray([Color(0.26, 0.44, 0.18, 0.55), Color(0.26, 0.44, 0.18, 0.55), Color(0.26, 0.44, 0.18, 0.55)])
@@ -383,10 +419,10 @@ func _draw():
     for lt in tous_lacs_tris:
         var alt := Array(lt)
         var ctr : Vector2 = alt.pop_front()
-        if ctr.distance_to(centre) < rayon_vue * 1.5:
-            var p0 : Vector2 = alt.pop_front()
-            var p1 : Vector2 = alt.pop_front()
-            var p2 : Vector2 = alt.pop_front()
+        var p0 : Vector2 = alt.pop_front()
+        var p1 : Vector2 = alt.pop_front()
+        var p2 : Vector2 = alt.pop_front()
+        if ctr.distance_to(centre) < rayon_vue * 2.0 or p0.distance_to(centre) < rayon_vue * 2.0 or p1.distance_to(centre) < rayon_vue * 2.0 or p2.distance_to(centre) < rayon_vue * 2.0:
             var code : int = alt.pop_front()
             var col_u := c_piscine if code == 3 else (c_marais if code == 2 else c_lac)
             draw_primitive(PoolVector2Array([p0, p1, p2]), col_u, PoolVector2Array())
