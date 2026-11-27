@@ -28,6 +28,7 @@ var eco : Node2D
 var pnj : Node2D
 var chunks : Node2D
 var nuit_overlay : CanvasModulate
+var lumieres : Node2D
 
 var bois = 140
 var metal = 60
@@ -56,6 +57,7 @@ func _ready():
     chunks = ChunksScript.new(); add_child(chunks)
     joueur = JoueurScript.new(); add_child(joueur)
     nuit_overlay = CanvasModulate.new(); add_child(nuit_overlay)
+    lumieres = LumieresScript.new(); add_child(lumieres)
     hud = HudScript.new(); add_child(hud)
     hud.btn_aide.connect("pressed", self, "_toggle_aide")
     hud.btn_carte.connect("pressed", self, "_toggle_carte")
@@ -111,6 +113,9 @@ func _physics_process(delta):
             joueur.vehicule_ref.set_meta("vit", joueur.vehicule_ref.get_meta("vit_max"))
             if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_Z) or Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_UP) or Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_RIGHT):
                 joueur.vehicule_ref.set_meta("essence", max(0.0, ess - 0.25 * delta))
+    for fc in lumieres.feux_camp:
+        if joueur.position.distance_to(fc["pos"]) < 150.0:
+            joueur.energie = min(joueur.energie_max, joueur.energie + 18.0 * delta)
     if armes.cooldown > 0: armes.cooldown -= delta
     if Input.is_key_pressed(KEY_SPACE) and armes.cooldown <= 0 and not hud.aide_panel.visible and not hud.carte_panel.visible:
         var err = armes.tirer(joueur.position, (get_global_mouse_position() - joueur.position).normalized(), self, projectiles)
