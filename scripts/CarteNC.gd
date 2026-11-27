@@ -13,6 +13,7 @@ var routes_locales := []
 var toutes_forets := []
 var tous_arbres := []
 var toutes_rivieres := []
+var tous_lacs := []
 var tous_sommets := []
 var tris_relief := []
 var tris_recifs := []
@@ -144,6 +145,15 @@ func construire_carte(_chemin_json : String):
                 var aar := Array(ar)
                 if aar.size() >= 4:
                     tous_arbres.append(Array([Vector2(aar.pop_front(), aar.pop_front()), aar.pop_front(), int(aar.pop_front())]))
+    var f_lac = File.new()
+    if f_lac.open("res://lacs_nc.json", File.READ) == OK:
+        var j_lac = JSON.parse(f_lac.get_as_text())
+        f_lac.close()
+        if j_lac.error == OK and typeof(j_lac.result) == TYPE_DICTIONARY:
+            for lc in j_lac.result.get("lacs", []):
+                var alc := Array(lc)
+                if alc.size() >= 4:
+                    tous_lacs.append(Array([Vector2(alc.pop_front(), alc.pop_front()), alc.pop_front(), str(alc.pop_front())]))
     var f_riv = File.new()
     if f_riv.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:
         var j_riv = JSON.parse(f_riv.get_as_text())
@@ -307,6 +317,19 @@ func _draw():
                 draw_circle(ap + Vector2(ray * 0.45, ray * 0.55), ray * 0.95, c_omb_a)
                 draw_circle(ap, ray, col_f)
                 draw_circle(ap + Vector2(-ray * 0.25, -ray * 0.25), ray * 0.52, c_lum_a)
+
+    # 2b-bis. Lacs, retenues d'eau et marais intérieurs
+    var col_rive_lac := Color(0.28, 0.44, 0.24, 0.85)
+    var col_eau_lac := Color(0.10, 0.44, 0.74, 0.94)
+    var col_reflet_lac := Color(0.22, 0.62, 0.88, 0.55)
+    for lc in tous_lacs:
+        var alc := Array(lc)
+        var lp : Vector2 = alc.pop_front()
+        if lp.distance_to(centre) < rayon_vue * 1.5:
+            var ray : float = alc.pop_front()
+            draw_circle(lp, ray * 1.12, col_rive_lac)
+            draw_circle(lp, ray, col_eau_lac)
+            draw_circle(lp + Vector2(-ray * 0.22, -ray * 0.20), ray * 0.55, col_reflet_lac)
 
     # 2b. Fleuves, rivières et criques
     var col_riv := Color(0.14, 0.56, 0.88, 0.92)
