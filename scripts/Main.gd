@@ -1,4 +1,5 @@
 extends Node2D
+var LumieresScript = preload("res://scripts/LumieresNuit.gd")
 
 const CarteScript = preload("res://scripts/CarteNC.gd")
 const JoueurScript = preload("res://scripts/Joueur.gd")
