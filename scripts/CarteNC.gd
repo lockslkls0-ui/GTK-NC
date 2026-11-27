@@ -3,6 +3,7 @@ extends Node2D
 var points_routes := []
 var points_cotes := []
 var lieux_nommes := []
+var labels_communes := []
 var nb_batiments := 0
 var centres_batiments := []
 
@@ -176,6 +177,7 @@ func construire_carte(_chemin_json : String):
                     lbl_t.rect_position = pos_t
                     lbl_t.add_color_override("font_color", Color(1.0, 0.90, 0.25))
                     add_child(lbl_t)
+                    labels_communes.append(lbl_t)
     update()
 
 func _process(delta):
@@ -185,6 +187,9 @@ func _process(delta):
         return
     var z_act = 1.0
     if j.cam != null: z_act = j.cam.zoom.x
+    var sc_com = clamp(z_act * 0.65, 1.1, 18.0)
+    for lc in labels_communes:
+        lc.rect_scale = Vector2(sc_com, sc_com)
     if j.position.distance_to(dernier_pos_maj) > 250.0 or abs(z_act - dernier_zoom_maj) > 0.15:
         dernier_pos_maj = j.position
         dernier_zoom_maj = z_act
@@ -386,8 +391,15 @@ func _draw():
             draw_rect(Rect2(ctr - d, d * 2.0), col_toit)
         ib += 1
 
-    # 6. Noms locaux autour du joueur
-    if police_carte != null:
+    # 6. Noms détaillés de chaque endroit en zoomant (quartiers, tribus, baies, îlots) avec ombre lisible
+    if police_carte != null and zoom_act < 5.5:
+        var portee_noms := 6500.0 * max(1.0, zoom_act)
+        var col_ombre_txt := Color(0.05, 0.07, 0.08, 0.85)
+        var col_lieu_txt := Color(0.98, 0.96, 0.86)
         for l in lieux_nommes:
-            if l["pos"].distance_to(centre) < rayon_vue * 0.7 and l.get("cat", "") != "commune":
-                draw_string(police_carte, l["pos"], str(l["nom"]), Color(0.95, 0.95, 0.85))
+            if l.get("cat", "") != "commune":
+                var lp : Vector2 = l["pos"]
+                if lp.distance_to(centre) < portee_noms:
+                    var nom_str := str(l["nom"])
+                    draw_string(police_carte, lp + Vector2(2, 2), nom_str, col_ombre_txt)
+                    draw_string(police_carte, lp, nom_str, col_lieu_txt)
