@@ -3,6 +3,7 @@ extends Node2D
 const GpuMesh = preload("res://monde/MaillageCarteGPU.gd")
 const GpuReseau = preload("res://monde/MaillageReseauGPU.gd")
 const NomsLayer = preload("res://monde/CalqueNomsGPU.gd")
+const TraficLayer = preload("res://monde/TraficVivantNC.gd")
 
 var points_routes := []
 var points_cotes := []
@@ -222,6 +223,7 @@ func construire_carte(_chemin_json : String):
     GpuMesh.construire_mesh(self)
     GpuReseau.construire_reseau(self)
     var nl = NomsLayer.new(); add_child(nl); nl.initialiser(tous_pois)
+    var tl = TraficLayer.new(); tl.z_index = 6; add_child(tl); tl.initialiser(routes_nationales + routes_locales)
     update()
 
     print("📊 COUCHES ACTIVES -> Terre:", tous_tris.size(), "| Récifs:", tris_recifs.size(), "| Lacs:", tous_lacs_tris.size(), "| Forêts:", toutes_forets.size(), "| Arbres:", tous_arbres.size(), "| Routes:", routes_nationales.size() + routes_locales.size(), "| Bâtiments:", tous_bats.size(), "| Enseignes:", tous_pois.size())
@@ -350,10 +352,7 @@ func _draw():
     # 1. Toute la Nouvelle-Calédonie (Grande Terre + Îles Loyauté + Bélep + Île des Pins)
     var col_terre := Color(0.22, 0.42, 0.20)
     var c_ter := PoolColorArray([col_terre, col_terre, col_terre])
-    for t in tous_tris:
-        var a := Array(t)
-        a.pop_front()
-        draw_primitive(a.pop_front(), c_ter, PoolVector2Array())
+    pass
 
     # 1b. Relief topographique de la Chaîne Centrale & Terre rouge latéritique du Sud
     var c_rel_1 := PoolColorArray([Color(0.26, 0.44, 0.18, 0.55), Color(0.26, 0.44, 0.18, 0.55), Color(0.26, 0.44, 0.18, 0.55)])

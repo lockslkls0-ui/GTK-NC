@@ -12,7 +12,7 @@ static func _quad(st : SurfaceTool, pa : Vector2, pb : Vector2, demi : float, co
 static func construire_reseau(parent : Node2D):
     var f = File.new()
     if f.open("res://triangulation/nc_reseau_arbres.bin", File.READ) != OK: return
-    var nr : int = f.get_32(); var nb : int = f.get_32(); var nrv : int = f.get_32(); var _na : int = f.get_32()
+    var nr : int = f.get_32(); var nb : int = f.get_32(); var nrv : int = f.get_32(); var na : int = f.get_32()
     var st_r := SurfaceTool.new(); st_r.begin(Mesh.PRIMITIVE_TRIANGLES)
     var st_b := SurfaceTool.new(); st_b.begin(Mesh.PRIMITIVE_TRIANGLES)
     var c_rt := Color(0.18, 0.19, 0.22); var c_pi := Color(0.68, 0.44, 0.24); var c_riv := Color(0.14, 0.56, 0.88)
@@ -26,7 +26,16 @@ static func construire_reseau(parent : Node2D):
     for _irv in range(nrv):
         var ra := Vector2(f.get_float(), f.get_float()); var rb := Vector2(f.get_float(), f.get_float()); var rlg : float = f.get_float()
         _quad(st_r, ra, rb, clamp(rlg * 0.35, 18.0, 55.0), c_riv)
+    var st_a := SurfaceTool.new(); st_a.begin(Mesh.PRIMITIVE_TRIANGLES)
+    var cols_a := Array(); cols_a.append(Color(0.14, 0.44, 0.16, 0.92)); cols_a.append(Color(0.18, 0.52, 0.18, 0.92)); cols_a.append(Color(0.10, 0.36, 0.13, 0.92))
+    for ia in range(na):
+        if f.get_position() + 12 > f.get_len(): break
+        var ap := Vector2(f.get_float(), f.get_float()); var ar : float = clamp(f.get_float(), 5.0, 18.0)
+        var ca : Color = cols_a[ia % 3]
+        st_a.add_color(ca); st_a.add_vertex(Vector3(ap.x, ap.y - ar, 0.0))
+        st_a.add_color(ca); st_a.add_vertex(Vector3(ap.x + ar * 0.9, ap.y + ar * 0.7, 0.0))
+        st_a.add_color(ca); st_a.add_vertex(Vector3(ap.x - ar * 0.9, ap.y + ar * 0.7, 0.0))
     f.close()
-    var mat := SpatialMaterial.new(); mat.flags_unshaded = true; mat.vertex_color_use_as_albedo = true
+    var mat := CanvasItemMaterial.new()
     var mr := MeshInstance2D.new(); mr.mesh = st_r.commit(); mr.material = mat; mr.z_index = 2; parent.add_child(mr)
     var mb := MeshInstance2D.new(); mb.mesh = st_b.commit(); mb.material = mat; mb.z_index = 3; parent.add_child(mb)

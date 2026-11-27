@@ -3,6 +3,7 @@ extends CanvasLayer
 var lieux := Array()
 var pois := Array()
 var labels := Array()
+var _t_nom := 0.0
 
 func initialiser(liste_pois : Array):
     layer = 5
@@ -22,6 +23,9 @@ func initialiser(liste_pois : Array):
         add_child(lb); labels.append(lb)
 
 func _process(_delta):
+    _t_nom += _delta
+    if _t_nom < 0.25: return
+    _t_nom = 0.0
     var m = get_parent().get_parent()
     var j = m.get("joueur") if m != null else null
     if j == null or j.cam == null: return
