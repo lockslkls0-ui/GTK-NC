@@ -5,6 +5,8 @@ var barre_energie : ColorRect
 var barre_essence : ColorRect
 var hud_label : Label
 var msg_label : Label
+var xp_bar : ProgressBar
+var lbl_stats_perso : Label
 var carte_panel : ColorRect
 var aide_panel : ColorRect
 var lunette_panel : ColorRect
@@ -21,6 +23,18 @@ func _ready():
     barre_energie = creer_jauge(Vector2(225, 18), 190, Color(0.95, 0.78, 0.18))
     barre_essence = creer_jauge(Vector2(428, 18), 190, Color(0.20, 0.78, 0.95))
     hud_label = Label.new(); hud_label.rect_position = Vector2(22, 42); hud_label.add_color_override("font_color", Color(1, 0.96, 0.80)); add_child(hud_label)
+    xp_bar = ProgressBar.new()
+    xp_bar.rect_position = Vector2(18, 86)
+    xp_bar.rect_size = Vector2(240, 14)
+    xp_bar.max_value = 500.0
+    xp_bar.modulate = Color(0.28, 0.78, 1.0)
+    add_child(xp_bar)
+
+    lbl_stats_perso = Label.new()
+    lbl_stats_perso.rect_position = Vector2(268, 84)
+    lbl_stats_perso.add_color_override("font_color", Color(0.88, 0.96, 1.0))
+    add_child(lbl_stats_perso)
+
     msg_label = Label.new(); msg_label.rect_position = Vector2(22, 138); msg_label.add_color_override("font_color", Color(0.35, 1.0, 0.65)); add_child(msg_label)
     btn_aide = Button.new(); btn_aide.text = "⚙️ Commandes [H]"; btn_aide.focus_mode = Control.FOCUS_NONE; btn_aide.rect_position = Vector2(835, 14); btn_aide.rect_size = Vector2(165, 34); add_child(btn_aide)
     btn_carte = Button.new(); btn_carte.text = "🗺️ Carte NC [M]"; btn_carte.focus_mode = Control.FOCUS_NONE; btn_carte.rect_position = Vector2(835, 54); btn_carte.rect_size = Vector2(165, 34); add_child(btn_carte)

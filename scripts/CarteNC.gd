@@ -31,11 +31,13 @@ func construire_carte(_chemin_json : String):
     var lat0 := -22.3015
     var lon0 := 166.4410
     var echelle := 1650000.0
-    var ctrl_f = Control.new(); police_carte = ctrl_f.get_font("font", "Label"); ctrl_f.free()
+    var tmp_c = Control.new()
+    police_carte = tmp_c.get_font("font", "Label")
+    tmp_c.free()
 
     # 1. Charger la carte parfaite scellée (41 557 triangles côtiers)
     var f_ter = File.new()
-    if f_ter.open("res://terrain_scelle_rapide.json", File.READ) == OK:
+    if f_ter.open("res://SAVE_CARTE_PARFAITE_SCELLEE/terrain_scelle_rapide_MASTER.json", File.READ) == OK:
         var j_ter = JSON.parse(f_ter.get_as_text())
         f_ter.close()
         if j_ter.error == OK and typeof(j_ter.result) == TYPE_DICTIONARY:
@@ -107,7 +109,7 @@ func construire_carte(_chemin_json : String):
                 var eb : int = int(ar.pop_front()) if ar.size() > 0 else 1
                 tris_recifs.append(Array([ctr, p0, p1, p2, eb]))
     var f_ter2 = File.new()
-    if f_ter2.open("res://terrain_scelle_rapide.json", File.READ) == OK:
+    if f_ter2.open("res://SAVE_CARTE_PARFAITE_SCELLEE/terrain_scelle_rapide_MASTER.json", File.READ) == OK:
         var j_ter2 = JSON.parse(f_ter2.get_as_text())
         f_ter2.close()
         if j_ter2.error == OK and typeof(j_ter2.result) == TYPE_DICTIONARY:
@@ -198,9 +200,27 @@ func construire_carte(_chemin_json : String):
                     lbl_t.queue_free()
     update()
 
+func recolter_arbre_proche(pos_j : Vector2, rayon : float = 110.0) -> int:
+    for i in range(tous_arbres.size() - 1, -1, -1):
+        var aar := Array(tous_arbres[i])
+        var ap : Vector2 = aar.pop_front()
+        if ap.distance_to(pos_j) <= rayon:
+            tous_arbres.remove(i)
+            update()
+            return 5
+    return 0
+
+func peupler_zone_depart(pos_dep : Vector2):
+    for k in range(28):
+        var ang := float(k) * 0.45
+        var dist := 130.0 + float((k * 47) % 520)
+        var pa := pos_dep + Vector2(cos(ang), sin(ang)) * dist
+        tous_arbres.append(Array([pa, 18.0 + float(k % 8), k % 3]))
+    update()
+
 func _process(delta):
     temps_vagues += delta
-    var j = get_parent().get_node_or_null("Joueur")
+    var j = get_parent().joueur
     if j == null:
         return
     var z_act = 1.0
@@ -232,7 +252,7 @@ func _process(delta):
 
 func _draw():
     var centre := dernier_pos_maj if dernier_pos_maj.x < 900000.0 else Vector2.ZERO
-    var j = get_parent().get_node_or_null("Joueur")
+    var j = get_parent().joueur
     var zoom_act = 1.0
     if j != null and j.cam != null: zoom_act = j.cam.zoom.x
     var rayon_vue := max(25000.0, 2200.0 * zoom_act)
@@ -318,6 +338,7 @@ func _draw():
         var c_feu_1 := Color(0.15, 0.42, 0.14)
         var c_feu_2 := Color(0.08, 0.28, 0.11)
         var c_lum_a := Color(0.24, 0.54, 0.18, 0.85)
+        var ia_loc := 0
         for ar in tous_arbres:
             var aar := Array(ar)
             var ap : Vector2 = aar.pop_front()
@@ -488,19 +509,19 @@ func _draw():
         var col_ombre_txt := Color(0.04, 0.06, 0.08, 0.90)
         var col_com_txt := Color(1.0, 0.90, 0.28)
         var col_lieu_txt := Color(0.98, 0.96, 0.88)
-        var sc_com := clamp(zoom_act * 2.4, 2.2, 42.0)
-        var sc_lieu := clamp(zoom_act * 1.4, 1.4, 7.5)
+        var sc_com := clamp(zoom_act * 3.8, 3.5, 65.0)
+        var sc_lieu := clamp(zoom_act * 2.4, 2.2, 12.0)
         for l in lieux_nommes:
             var lp : Vector2 = l["pos"]
             var est_com : bool = (l.get("cat", "") == "commune")
             if est_com:
-                if zoom_act >= 1.6 and lp.distance_to(centre) < rayon_vue * 1.6:
+                if zoom_act >= 1.3 and lp.distance_to(centre) < rayon_vue * 1.8:
                     var nom_c := str(l["nom"]).to_upper()
                     draw_set_transform(lp + Vector2(3.0 * zoom_act, 3.0 * zoom_act), 0.0, Vector2(sc_com, sc_com))
                     draw_string(police_carte, Vector2.ZERO, nom_c, col_ombre_txt)
                     draw_set_transform(lp, 0.0, Vector2(sc_com, sc_com))
                     draw_string(police_carte, Vector2.ZERO, nom_c, col_com_txt)
-            elif zoom_act < 5.5 and lp.distance_to(centre) < 12000.0 * max(1.0, zoom_act):
+            elif zoom_act < 6.0 and lp.distance_to(centre) < 15000.0 * max(1.0, zoom_act):
                 var nom_l := str(l["nom"])
                 draw_set_transform(lp + Vector2(2.0, 2.0), 0.0, Vector2(sc_lieu, sc_lieu))
                 draw_string(police_carte, Vector2.ZERO, nom_l, col_ombre_txt)
