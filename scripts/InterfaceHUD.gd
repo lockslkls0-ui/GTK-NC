@@ -1,7 +1,11 @@
 extends CanvasLayer
 
 const TelScript = preload("res://ui/TelephoneClan.gd")
+const RespawnScript = preload("res://ui/EcranReapparition.gd")
+var respawn_panel : ColorRect
 var tel_panel : ColorRect
+var bar_armure : ProgressBar
+var bar_veh : ProgressBar
 
 var barre_pv : ColorRect
 var barre_energie : ColorRect
@@ -47,6 +51,8 @@ func _ready():
     var r_h = ColorRect.new(); r_h.color = Color(0.1, 0.45, 0.3); r_h.rect_position = Vector2(835, 182); r_h.rect_size = Vector2(165, 1); add_child(r_h)
     var r_v = ColorRect.new(); r_v.color = Color(0.1, 0.45, 0.3); r_v.rect_position = Vector2(917, 100); r_v.rect_size = Vector2(1, 165); add_child(r_v)
     var rj = ColorRect.new(); rj.color = Color(1.0, 1.0, 1.0); rj.rect_position = Vector2(915, 180); rj.rect_size = Vector2(5, 5); add_child(rj)
+    bar_armure = ProgressBar.new(); bar_armure.max_value = 100.0; bar_armure.rect_position = Vector2(16, 62); bar_armure.rect_size = Vector2(150, 14); bar_armure.percent_visible = false; bar_armure.modulate = Color(0.25, 0.65, 1.0); add_child(bar_armure)
+    bar_veh = ProgressBar.new(); bar_veh.max_value = 100.0; bar_veh.rect_position = Vector2(176, 62); bar_veh.rect_size = Vector2(150, 14); bar_veh.percent_visible = false; bar_veh.modulate = Color(0.95, 0.65, 0.15); add_child(bar_veh)
     creer_panneaux()
 
 func creer_jauge(pos : Vector2, w : float, coul : Color) -> ColorRect:
@@ -105,6 +111,13 @@ func creer_panneaux():
     ajouter_ville("📍 Îles Bélep", Vector2(75, 42)); ajouter_ville("📍 Koumac", Vector2(145, 88)); ajouter_ville("📍 [F2] Koné / Pouembout", Vector2(210, 160)); ajouter_ville("📍 Poindimié", Vector2(315, 155)); ajouter_ville("📍 [F3] Bourail", Vector2(295, 238)); ajouter_ville("📍 La Foa", Vector2(382, 272)); ajouter_ville("📍 Dumbéa / Païta", Vector2(432, 302)); ajouter_ville("📍 [F1] Nouméa (QG)", Vector2(455, 336)); ajouter_ville("📍 [F4] Île des Pins", Vector2(525, 396)); ajouter_ville("📍 Ouvéa", Vector2(448, 112)); ajouter_ville("📍 [F6] Lifou (Loyauté)", Vector2(505, 160)); ajouter_ville("📍 Maré", Vector2(582, 222))
     add_child(carte_panel)
     tel_panel = TelScript.new(); add_child(tel_panel)
+    respawn_panel = RespawnScript.new(); add_child(respawn_panel)
+
+func _maj_bars(arm : float, vh : float):
+    if bar_armure != null: bar_armure.value = clamp(arm, 0.0, 100.0)
+    if bar_veh != null:
+        bar_veh.visible = vh > 0.0
+        bar_veh.value = clamp(vh, 0.0, 100.0)
 
 func maj_texte(pv : float, en : float, ess : float, est_nuit : bool, vague : int, bois : int, metal : int, bidons : int, vivres : int, arme_nom : String, ch : int, res : int, nb_al : int, veh_nom : String):
     barre_pv.rect_size.x = 190.0 * clamp(pv / 100.0, 0.0, 1.0)

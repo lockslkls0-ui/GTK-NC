@@ -60,3 +60,16 @@ func spawn_ennemi(pos_joueur : Vector2, vague : int):
     en.set_meta("arme", randf() < 0.45)
     add_child(en)
     ennemis.append(en)
+
+func _process(_d):
+    update()
+
+func _draw():
+    for en in ennemis:
+        if is_instance_valid(en) and en.has_meta("hp"):
+            var hp : float = float(en.get_meta("hp"))
+            var hp_max : float = float(en.get_meta("hp_max")) if en.has_meta("hp_max") else 100.0
+            var r : float = clamp(hp / max(hp_max, 1.0), 0.0, 1.0)
+            var p : Vector2 = en.position + Vector2(-18, -28)
+            draw_rect(Rect2(p, Vector2(36, 5)), Color(0.1, 0.1, 0.1, 0.85))
+            draw_rect(Rect2(p, Vector2(36.0 * r, 5)), Color(0.92, 0.22, 0.22))
