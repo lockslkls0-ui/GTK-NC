@@ -233,6 +233,9 @@ func _draw():
         if pa.distance_to(centre) < rayon_vue * 1.4 or (ipl % pas_pl == 0):
             if zoom_act < 6.0 and pa.distance_to(centre) < 9000.0:
                 draw_line(pa, pb, col_ecume, larg_ecume)
+            if zoom_act < 5.0 and pa.distance_to(centre) < 8500.0:
+                var onde := 0.5 + 0.5 * sin(temps_vagues * 2.2)
+                draw_line(pa, pb, Color(0.92, 0.98, 1.0, 0.25 + 0.30 * onde), larg_plage + 18.0 + 26.0 * onde)
             draw_line(pa, pb, col_plage, larg_plage)
         ipl += 1
 
