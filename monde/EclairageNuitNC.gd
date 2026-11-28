@@ -5,6 +5,7 @@ var grille_mais := Dictionary()
 var bombes_vis := Array()
 var feux_vis := Array()
 var explosions_vis := Array()
+var crateres_vis := Array()
 var lum_torche : Light2D
 var lum_phare_g : Light2D
 var lum_phare_d : Light2D
@@ -109,10 +110,6 @@ func _process(delta):
         lum_phare_g.enabled = false; lum_phare_d.enabled = false
         lum_torche.enabled = torche_active
         lum_torche.position = pj; lum_torche.rotation = (get_global_mouse_position() - pj).angle()
-    for fc in feux_vis:
-        var pfc : Vector2 = fc["pos"]
-        draw_circle(pfc, 48.0, Color(1.0, 0.65, 0.15, 0.38))
-        draw_circle(pfc, 12.0, Color(1.0, 0.45, 0.10, 0.95))
     if m.constr.a_un_abri:
         lum_feu.enabled = true; lum_feu.position = m.constr.dernier_abri + Vector2(0, 62)
         _t_surv += delta
@@ -130,11 +127,28 @@ func _process(delta):
         bombes_vis[i]["t"] -= delta
         if bombes_vis[i]["t"] <= 0.0:
             var pb : Vector2 = bombes_vis[i]["pos"]
-            explosions_vis.append({"pos": pb, "t": 0.6})
-            for en in m.pop.ennemis:
-                if is_instance_valid(en) and en.position.distance_to(pb) < 260.0:
-                    en.set_meta("hp", float(en.get_meta("hp")) - 250.0)
+            explosions_vis.append({"pos": pb, "t": 0.85}); crateres_vis.append(pb); m.shake_timer = 0.85
             if m.get("audio") != null: m.audio.p_boom.play()
+            var dj : float = m.joueur.position.distance_to(pb)
+            if dj < 260.0:
+                var deg_j : float = clamp((1.0 - dj / 260.0) * 90.0, 15.0, 90.0)
+                m.joueur.pv = max(0.0, m.joueur.pv - deg_j)
+                m.joueur.position += (m.joueur.position - pb).normalized() * 65.0
+                m.hud.msg_label.text = "💥 SOUFFLE DE L'EXPLOSION ! (-" + str(int(deg_j)) + " PV)"
+            for en in m.pop.ennemis:
+                if is_instance_valid(en) and en.position.distance_to(pb) < 360.0:
+                    en.set_meta("hp", float(en.get_meta("hp")) - 350.0)
+            for ia in range(m.pop.allies.size() - 1, -1, -1):
+                var al = m.pop.allies[ia]
+                if is_instance_valid(al) and al.position.distance_to(pb) < 300.0:
+                    al.queue_free(); m.pop.allies.remove(ia)
+            for v in m.veh.vehicules:
+                if is_instance_valid(v) and v.position.distance_to(pb) < 320.0:
+                    var pv_v : float = float(v.get_meta("pv_veh")) if v.has_meta("pv_veh") else 100.0
+                    v.set_meta("pv_veh", max(0.0, pv_v - 75.0))
+            if m.get("constr") != null:
+                for c_it in m.constr.constructions:
+                    if c_it["pos"].distance_to(pb) < 320.0: c_it["pv"] -= 700.0
             bombes_vis.remove(i)
     for j_ex in range(explosions_vis.size() - 1, -1, -1):
         explosions_vis[j_ex]["t"] -= delta
@@ -160,13 +174,11 @@ func _draw():
                     draw_rect(Rect2(ms - Vector2(7, 6), Vector2(14, 12)), Color(1.0, 0.85, 0.32, 0.95))
     for b in bombes_vis:
         draw_circle(b["pos"], 12.0, Color(0.15, 0.15, 0.18)); draw_circle(b["pos"], 5.0, Color(1.0, 0.2, 0.1))
+    for cr in crateres_vis:
+        draw_circle(cr, 88.0, Color(0.08, 0.07, 0.06, 0.85)); draw_circle(cr, 34.0, Color(0.03, 0.03, 0.03, 0.92))
     for ex in explosions_vis:
-        var r_ex : float = (0.6 - ex["t"]) * 440.0
+        var r_ex : float = (0.85 - ex["t"]) * 560.0
         draw_circle(ex["pos"], r_ex, Color(1.0, 0.55, 0.10, 0.78)); draw_circle(ex["pos"], r_ex * 0.55, Color(1.0, 0.92, 0.45, 0.92))
-    for fc in feux_vis:
-        var pfc : Vector2 = fc["pos"]
-        draw_circle(pfc, 48.0, Color(1.0, 0.65, 0.15, 0.38))
-        draw_circle(pfc, 12.0, Color(1.0, 0.45, 0.10, 0.95))
     if m.constr.a_un_abri:
         var pf : Vector2 = m.constr.dernier_abri + Vector2(0, 62)
         draw_circle(pf, 46.0, Color(1.0, 0.65, 0.15, 0.38)); draw_circle(pf, 11.0, Color(1.0, 0.45, 0.10, 0.95))

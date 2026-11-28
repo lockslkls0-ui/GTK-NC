@@ -121,7 +121,7 @@ func _physics_process(delta):
         joueur.cam.offset = (get_global_mouse_position() - joueur.position) * 0.45
     elif shake_timer > 0.0:
         shake_timer -= delta
-        joueur.cam.offset = Vector2(rand_range(-14.0, 14.0), rand_range(-14.0, 14.0))
+        joueur.cam.offset = Vector2(rand_range(-32.0, 32.0), rand_range(-32.0, 32.0))
     else:
         joueur.cam.offset = Vector2.ZERO
     if joueur.pv <= 0:
