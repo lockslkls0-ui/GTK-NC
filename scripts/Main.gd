@@ -358,7 +358,7 @@ func _input(event):
                 if gain_m > 0:
                     bois += gain_m; metal += gain_m / 2; vivres += 2; eco.argent += 2000; gagner_xp(250.0, "Mission accomplie")
                     pnj.creer_pnj_mission(monde.mission_cible); pnj.spawner_civils_a_secourir(monde.mission_cible, 3); audio.p_ok.play()
-            KEY_B:
+            999991:
                 if bois >= 3:
                     bois -= 3; lumieres.allumer_feu(joueur.position + Vector2(36, 0).rotated(joueur.corps_visuel.rotation)); audio.p_ok.play()
                     hud.msg_label.text = "🔥 Feu de camp allumé au briquet ! (-3 bois, éclaire la nuit & recharge l'énergie)"
@@ -386,7 +386,7 @@ func _input(event):
                         hud.msg_label.text = "🤝 Cousin / Allié recruté dans ton équipe !"; break
             KEY_P:
                 hud.tel_panel.visible = not hud.tel_panel.visible
-            KEY_X: hud.msg_label.text = eco.poser_explosif(joueur.position)
+            999992: pass
             KEY_K:
                 if not joueur.en_vehicule: hud.msg_label.text = eco.poser_coffre_qg(joueur.position)
             KEY_F1:

@@ -3,6 +3,7 @@ extends Node2D
 var grille_lamp := Dictionary()
 var grille_mais := Dictionary()
 var bombes_vis := Array()
+var feux_vis := Array()
 var explosions_vis := Array()
 var lum_torche : Light2D
 var lum_phare_g : Light2D
@@ -69,6 +70,16 @@ func _input(event):
             torche_active = not torche_active
             m.hud.msg_label.text = "🔦 Phares / Torche ALLUMÉS [U]" if torche_active else "🔦 Phares / Torche ÉTEINTS [U]"
             get_tree().set_input_as_handled()
+        elif event.scancode == KEY_B and not m.joueur.en_vehicule:
+            if m.bois >= 3:
+                m.bois -= 3
+                var pf : Vector2 = m.joueur.position + Vector2(36, 0).rotated(m.joueur.corps_visuel.rotation)
+                feux_vis.append({"pos": pf, "t": 300.0})
+                lum_feu.enabled = true; lum_feu.position = pf
+                m.hud.msg_label.text = "🔥 Feu de camp allumé au briquet (-3 bois) ! Attire les survivants alliés."
+            else:
+                m.hud.msg_label.text = "🪵 Il faut 3 bois pour allumer un feu de camp [B] !"
+            get_tree().set_input_as_handled()
         elif event.scancode == KEY_X:
             if m.get("eco") != null and m.eco.explosifs > 0:
                 m.eco.explosifs -= 1
@@ -98,6 +109,10 @@ func _process(delta):
         lum_phare_g.enabled = false; lum_phare_d.enabled = false
         lum_torche.enabled = torche_active
         lum_torche.position = pj; lum_torche.rotation = (get_global_mouse_position() - pj).angle()
+    for fc in feux_vis:
+        var pfc : Vector2 = fc["pos"]
+        draw_circle(pfc, 48.0, Color(1.0, 0.65, 0.15, 0.38))
+        draw_circle(pfc, 12.0, Color(1.0, 0.45, 0.10, 0.95))
     if m.constr.a_un_abri:
         lum_feu.enabled = true; lum_feu.position = m.constr.dernier_abri + Vector2(0, 62)
         _t_surv += delta
@@ -148,6 +163,10 @@ func _draw():
     for ex in explosions_vis:
         var r_ex : float = (0.6 - ex["t"]) * 440.0
         draw_circle(ex["pos"], r_ex, Color(1.0, 0.55, 0.10, 0.78)); draw_circle(ex["pos"], r_ex * 0.55, Color(1.0, 0.92, 0.45, 0.92))
+    for fc in feux_vis:
+        var pfc : Vector2 = fc["pos"]
+        draw_circle(pfc, 48.0, Color(1.0, 0.65, 0.15, 0.38))
+        draw_circle(pfc, 12.0, Color(1.0, 0.45, 0.10, 0.95))
     if m.constr.a_un_abri:
         var pf : Vector2 = m.constr.dernier_abri + Vector2(0, 62)
         draw_circle(pf, 46.0, Color(1.0, 0.65, 0.15, 0.38)); draw_circle(pf, 11.0, Color(1.0, 0.45, 0.10, 0.95))
