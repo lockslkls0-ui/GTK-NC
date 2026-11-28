@@ -7,7 +7,7 @@ var tous_sommets := Array()
 var police : Font
 
 func charger(f_font : Font):
-    z_index = -7
+    z_index = 0
     police = f_font
     var f = File.new()
     if f.open("res://rivieres_et_sommets_nc.json", File.READ) == OK:

@@ -52,12 +52,22 @@ func _input(event):
             if mode_build == 1:
                 vertical = not vertical; get_tree().set_input_as_handled(); update()
             elif m.get("armes") != null:
-                var mq : int = m.armes.chargeur_max - m.armes.chargeur
-                if mq > 0 and m.armes.reserve > 0:
-                    var pr : int = min(mq, m.armes.reserve)
-                    m.armes.chargeur += pr; m.armes.reserve -= pr
-                    m.hud.msg_label.text = "🔄 Rechargé (" + str(m.armes.chargeur) + "/" + str(m.armes.reserve) + ")"
-                    get_tree().set_input_as_handled()
+                var idx_a : int = m.armes.arme_idx
+                var ch : int = m.armes.chargeurs[idx_a]
+                var mx : int = m.armes.max_charg[idx_a]
+                if ch < mx and m.armes.reserve > 0:
+                    var pr : int = min(mx - ch, m.armes.reserve)
+                    m.armes.chargeurs[idx_a] = ch + pr
+                    m.armes.reserve -= pr
+                    m.hud.msg_label.text = "🔄 " + m.armes.noms[idx_a] + " rechargé (" + str(ch + pr) + "/" + str(mx) + " | Réserve : " + str(m.armes.reserve) + ")"
+                else:
+                    m.hud.msg_label.text = "🔫 " + m.armes.noms[idx_a] + " : " + str(ch) + "/" + str(mx) + " | Réserve : " + str(m.armes.reserve)
+        elif (sc == KEY_F9 or sc == KEY_F5) and m.hud.get("save_panel") != null:
+            m.hud.save_panel.rafraichir(); m.hud.save_panel.visible = not m.hud.save_panel.visible; get_tree().set_input_as_handled()
+        elif sc == KEY_X and m.get("eco") != null:
+            m.eco.z_index = 20; m.hud.msg_label.text = m.eco.poser_explosif(j.position); get_tree().set_input_as_handled()
+        elif sc == KEY_H and m.hud.get("respawn_panel") != null:
+            m.hud.respawn_panel.visible = not m.hud.respawn_panel.visible; get_tree().set_input_as_handled()
         elif sc == KEY_E and not j.en_vehicule:
             var iv := _index_vise(j)
             if iv != -1 and constructions[iv]["type"] == 1:
@@ -99,7 +109,8 @@ func _input(event):
             var pv_i := 1200.0 if mode_build == 1 else (2500.0 if mode_build == 2 else 1800.0)
             constructions.append({"type": mode_build, "pos": pos, "vert": vertical, "ouvert": false, "pv": pv_i, "pv_max": pv_i, "bat": bat, "col": col, "cd": 0.0, "ang": 0.0})
             if m.get("audio") != null: m.audio.p_ok.play()
-            m.hud.msg_label.text = "🛖 Cabane posée = Point de Réapparition activé !" if mode_build == 2 else "✅ Construction posée !"
+            if mode_build == 2 and m.hud.get("save_panel") != null: m.hud.save_panel._on_save()
+            m.hud.msg_label.text = "🛖 Cabane posée + Sauvegarde automatique effectuée !" if mode_build == 2 else "✅ Construction posée !"
             update()
 
 func _process(delta):
@@ -115,7 +126,9 @@ func _process(delta):
                     var d2 : float = en.position.distance_squared_to(p_t)
                     if d2 < d_min: d_min = d2; cible_en = en
             if cible_en != null:
-                var dir_t : Vector2 = (cible_en.position - p_t).normalized(); c_item["ang"] = dir_t.angle()
+                var v_en : Vector2 = cible_en.get_meta("dir") * 110.0 if cible_en.has_meta("dir") else Vector2.ZERO
+                var t_vol : float = cible_en.position.distance_to(p_t) / 1050.0
+                var dir_t : Vector2 = ((cible_en.position + v_en * t_vol) - p_t).normalized(); c_item["ang"] = dir_t.angle()
                 if c_item["cd"] <= 0.0:
                     c_item["cd"] = 0.28; m.armes.tirer(p_t + dir_t * 32.0, dir_t, true, 65.0)
                 update()

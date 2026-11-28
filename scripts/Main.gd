@@ -1,7 +1,7 @@
 extends Node2D
 
 const ApercuScript = preload("res://monde/ApercuConstruction.gd")
-var LumieresScript = preload("res://scripts/LumieresNuit.gd")
+var LumieresScript = preload("res://monde/EclairageNuitNC.gd")
 
 const CarteScript = preload("res://scripts/CarteNC.gd")
 const JoueurScript = preload("res://scripts/Joueur.gd")
@@ -60,12 +60,12 @@ func _ready():
     constr = ConstrScript.new(); add_child(constr)
     armes = ArmesScript.new(); add_child(armes)
     veh = VehiculesScript.new(); veh.z_index = 8; add_child(veh); veh.generer_flotte_et_stations()
-    bat = BatimentsScript.new(); add_child(bat)
+    bat = BatimentsScript.new(); bat.z_index = 7; add_child(bat)
     pop = PopScript.new(); pop.z_index = 9; add_child(pop); pop.peupler()
-    monde = MondeScript.new(); add_child(monde); monde.initialiser_trafic(carte.points_routes, carte.lieux_nommes, carte.tous_pois)
+    monde = MondeScript.new(); monde.z_index = 7; add_child(monde); monde.initialiser_trafic(carte.points_routes, carte.lieux_nommes, carte.tous_pois)
     audio = AudioScript.new(); add_child(audio)
     eco = EcoScript.new(); add_child(eco)
-    pnj = PnjScript.new(); add_child(pnj)
+    pnj = PnjScript.new(); pnj.z_index = 9; add_child(pnj)
     chunks = ChunksScript.new(); add_child(chunks)
     joueur = JoueurScript.new(); joueur.z_index = 10; add_child(joueur)
     joueur.position = monde.gps_vers_jeu(-21.2652, 165.6159)
@@ -79,9 +79,11 @@ func _ready():
     if veh != null and veh.vehicules.size() > 0:
         for iv in range(min(3, veh.vehicules.size())):
             veh.vehicules[iv].position = joueur.position + Vector2(85.0 * (iv + 1), 40.0)
-    nuit_overlay = CanvasModulate.new(); add_child(nuit_overlay)
+    nuit_overlay = CanvasModulate.new(); nuit_overlay.visible = false; add_child(nuit_overlay)
     lumieres = LumieresScript.new(); add_child(lumieres)
     hud = HudScript.new(); add_child(hud)
+    if hud.get("save_panel") != null: hud.save_panel.main_ref = self
+    if hud.get("respawn_panel") != null: hud.respawn_panel.main_ref = self
     hud.btn_aide.connect("pressed", self, "_toggle_aide")
     hud.btn_carte.connect("pressed", self, "_toggle_carte")
     hud.btn_zoom_in.connect("pressed", self, "_zoom_plus")
@@ -123,7 +125,7 @@ func _physics_process(delta):
     else:
         joueur.cam.offset = Vector2.ZERO
     if joueur.pv <= 0:
-        hud.msg_label.text = "💀 TU ES TOMBÉ ! Appuie sur [R] pour revivre ou [F9] pour charger."
+        if hud.get("respawn_panel") != null and not hud.respawn_panel.visible: hud.respawn_panel.visible = true
         return
     temps_cycle += delta
     if temps_cycle >= 180.0:
@@ -204,6 +206,7 @@ func _physics_process(delta):
         hud.xp_bar.max_value = xp_max
         hud.xp_bar.value = xp
         hud.lbl_stats_perso.text = "Niv." + str(niveau) + " (" + str(int(xp)) + "/" + str(int(xp_max)) + " XP) | 🛡️ Armure [" + tenue_nom + "]: " + str(int(armure)) + "%" + pv_veh_txt
+    if hud.has_method("_maj_bars"): hud._maj_bars(armure, float(joueur.vehicule_ref.get_meta("pv_veh")) if (joueur.en_vehicule and joueur.vehicule_ref != null and joueur.vehicule_ref.has_meta("pv_veh")) else 0.0)
     hud.maj_texte(joueur.pv, joueur.energie, ess_act, est_nuit, vague, bois, metal, bidons, vivres, armes.noms[armes.arme_idx], armes.chargeurs[armes.arme_idx], armes.reserve, nb_al, nom_v)
 
 func gagner_xp(pts : float, raison : String = ""):

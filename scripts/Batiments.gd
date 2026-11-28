@@ -14,7 +14,7 @@ func monter_echelle(joueur : KinematicBody2D) -> String:
         joueur.cam.zoom = Vector2(1.25, 1.25)
         return "🪜 SUR LE TOIT ! Invulnérable au corps-à-corps + vue longue portée ([L] descendre)"
     else:
-        joueur.z_index = 5
+        joueur.z_index = 10
         joueur.scale = Vector2(1.0, 1.0)
         joueur.cam.zoom = Vector2(0.85, 0.85)
         return "🪜 Redescendu dans la rue."

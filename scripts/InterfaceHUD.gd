@@ -2,6 +2,8 @@ extends CanvasLayer
 
 const TelScript = preload("res://ui/TelephoneClan.gd")
 const RespawnScript = preload("res://ui/EcranReapparition.gd")
+const SaveScript = preload("res://ui/MenuSauvegarde.gd")
+var save_panel : ColorRect
 var respawn_panel : ColorRect
 var tel_panel : ColorRect
 var bar_armure : ProgressBar
@@ -25,6 +27,7 @@ var cur_m_s := PoolVector2Array()
 var cur_m_c := PoolColorArray()
 
 func _ready():
+    layer = 10
     var fond = ColorRect.new(); fond.color = Color(0.05, 0.08, 0.12, 0.84); fond.rect_position = Vector2(12, 10); fond.rect_size = Vector2(810, 122); add_child(fond)
     barre_pv = creer_jauge(Vector2(22, 18), 190, Color(0.90, 0.20, 0.22))
     barre_energie = creer_jauge(Vector2(225, 18), 190, Color(0.95, 0.78, 0.18))
@@ -43,7 +46,7 @@ func _ready():
     add_child(lbl_stats_perso)
 
     msg_label = Label.new(); msg_label.rect_position = Vector2(22, 138); msg_label.add_color_override("font_color", Color(0.35, 1.0, 0.65)); add_child(msg_label)
-    btn_aide = Button.new(); btn_aide.text = "⚙️ Commandes [H]"; btn_aide.focus_mode = Control.FOCUS_NONE; btn_aide.rect_position = Vector2(835, 14); btn_aide.rect_size = Vector2(165, 34); add_child(btn_aide)
+    btn_aide = Button.new(); btn_aide.text = "⚙️ Commandes [Échap]"; btn_aide.focus_mode = Control.FOCUS_NONE; btn_aide.rect_position = Vector2(835, 14); btn_aide.rect_size = Vector2(165, 34); add_child(btn_aide)
     btn_carte = Button.new(); btn_carte.text = "🗺️ Carte NC [M]"; btn_carte.focus_mode = Control.FOCUS_NONE; btn_carte.rect_position = Vector2(835, 54); btn_carte.rect_size = Vector2(165, 34); add_child(btn_carte)
     btn_zoom_in = Button.new(); btn_zoom_in.text = "🔍+"; btn_zoom_in.focus_mode = Control.FOCUS_NONE; btn_zoom_in.rect_position = Vector2(1008, 14); btn_zoom_in.rect_size = Vector2(48, 34); add_child(btn_zoom_in)
     btn_zoom_out = Button.new(); btn_zoom_out.text = "🔭-"; btn_zoom_out.focus_mode = Control.FOCUS_NONE; btn_zoom_out.rect_position = Vector2(1008, 54); btn_zoom_out.rect_size = Vector2(48, 34); add_child(btn_zoom_out)
@@ -112,6 +115,7 @@ func creer_panneaux():
     add_child(carte_panel)
     tel_panel = TelScript.new(); add_child(tel_panel)
     respawn_panel = RespawnScript.new(); add_child(respawn_panel)
+    save_panel = SaveScript.new(); add_child(save_panel)
 
 func _maj_bars(arm : float, vh : float):
     if bar_armure != null: bar_armure.value = clamp(arm, 0.0, 100.0)

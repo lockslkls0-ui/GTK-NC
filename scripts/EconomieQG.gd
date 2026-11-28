@@ -1,5 +1,8 @@
 extends Node2D
 
+func _ready():
+    z_index = 15
+
 var argent := 2500
 var explosifs := 3
 var coffre_pose := false
