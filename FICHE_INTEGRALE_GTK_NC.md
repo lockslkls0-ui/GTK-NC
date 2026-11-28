@@ -45,3 +45,10 @@ C. ENTRAIDE DU CLAN, CONVOI MOTORISÉ & SAUVEGARDES
   Amélioration des véhicules dans les stations-service réelles, fabrication d'équipements au campement et échange de ressources dans les 631 magasins.
 - PALIER 32 — AMBIANCE SONORE & MÉTÉO TROPICALE :
   Bruit des vagues près du lagon, chants d'oiseaux en forêt/tribu, averses tropicales et effets lumineux renforcés.
+
+- PALIER 33 — MULTIJOUEUR COOP LAN (WI-FI / PARTAGE DE CONNEXION) :
+  Héberger ou rejoindre une partie entre téléphones et PC sans Internet (WebSocket / ENet local), avec synchronisation légère des joueurs, véhicules, constructions et combats.
+- PALIER 34 — MULTIJOUEUR EN LIGNE (SERVEUR NOUVELLE-CALÉDONIE) :
+  Relais serveur léger permettant aux joueurs de tout le Caillou (Nouméa, Brousse, Îles) de se retrouver sur la même carte en temps réel.
+- PALIER 35 — EXPORT APPLICATION ANDROID (.APK) :
+  Génération du paquet Android installable directement sur smartphone avec icône GTK-NC, contrôles tactiles natifs et sauvegardes persistantes.

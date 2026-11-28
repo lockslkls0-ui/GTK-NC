@@ -18,8 +18,8 @@ func _ready():
 func lister_sauvegardes() -> Array:
     var res := Array()
     var dir = Directory.new()
-    if not dir.dir_exists("res://sauvegardes"): dir.make_dir_recursive("res://sauvegardes")
-    if dir.open("res://sauvegardes") != OK: return res
+    if not dir.dir_exists("user://sauvegardes"): dir.make_dir_recursive("user://sauvegardes")
+    if dir.open("user://sauvegardes") != OK: return res
     dir.list_dir_begin(true, true)
     var fn = dir.get_next()
     while fn != "":
@@ -31,7 +31,7 @@ func lister_sauvegardes() -> Array:
 
 func lire_infos(nom_f : String) -> Dictionary:
     var f = File.new()
-    if f.open("res://sauvegardes/" + nom_f, File.READ) != OK: return {}
+    if f.open("user://sauvegardes/" + nom_f, File.READ) != OK: return {}
     var d = parse_json(f.get_as_text()); f.close()
     return d if typeof(d) == TYPE_DICTIONARY else {}
 
@@ -51,7 +51,7 @@ func _on_save():
     var m = main_ref if main_ref != null else get_tree().get_root().get_node_or_null("Main")
     if m == null: return
     var dir = Directory.new()
-    if not dir.dir_exists("res://sauvegardes"): dir.make_dir_recursive("res://sauvegardes")
+    if not dir.dir_exists("user://sauvegardes"): dir.make_dir_recursive("user://sauvegardes")
     var dt := OS.get_datetime()
     var an := str(dt["year"]); var mo := str(dt["month"]).pad_zeros(2); var jr := str(dt["day"]).pad_zeros(2)
     var hr := str(dt["hour"]).pad_zeros(2); var mn := str(dt["minute"]).pad_zeros(2); var sc := str(dt["second"]).pad_zeros(2)
@@ -70,7 +70,7 @@ func _on_save():
         "constructions": cons_save
     }
     var f = File.new()
-    if f.open("res://sauvegardes/" + nom, File.WRITE) == OK:
+    if f.open("user://sauvegardes/" + nom, File.WRITE) == OK:
         f.store_string(to_json(d)); f.close()
         rafraichir(); m.hud.msg_label.text = "💾 Partie enregistrée (" + date_lisible + ") !"
 

@@ -1,17 +1,29 @@
 ; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
 config_version=4
 
 [application]
+
 config/name="GTK-NC - Grande Terre Kanaky Nouvelle-Caledonie"
 run/main_scene="res://scenes/Main.tscn"
 
-[rendering]
-quality/driver/driver_name="GLES2"
-environment/default_clear_color=Color(0.06, 0.48, 0.62, 1)
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
 
 [memory]
 
+limits/multithreaded_server/rid_pool_prealloc=65536
+limits/message_queue/max_size_kb=8192
 dynamic_memory/max_size_mb=256
 
-limits/message_queue/max_size_kb=8192
-limits/multithreaded_server/rid_pool_prealloc=65536
+[rendering]
+
+quality/driver/driver_name="GLES2"
+environment/default_clear_color=Color( 0.06, 0.48, 0.62, 1 )
