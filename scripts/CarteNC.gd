@@ -223,6 +223,7 @@ func construire_carte(_chemin_json : String):
                     lbl_t.queue_free()
     GpuMesh.construire_mesh(self)
     GpuReseau.construire_reseau(self)
+    tris_recifs.clear(); tris_relief.clear(); toutes_forets.clear(); tous_lacs_tris.clear()
     var nl = NomsLayer.new(); add_child(nl); nl.initialiser(tous_pois)
     var el = EnseignesLayer.new(); add_child(el); el.charger(police_carte); el.z_index = 5
     var tl = TraficLayer.new(); tl.z_index = 6; add_child(tl); tl.initialiser(routes_nationales + routes_locales)

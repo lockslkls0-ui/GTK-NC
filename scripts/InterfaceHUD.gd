@@ -3,6 +3,10 @@ extends CanvasLayer
 const TelScript = preload("res://ui/TelephoneClan.gd")
 const RespawnScript = preload("res://ui/EcranReapparition.gd")
 const SaveScript = preload("res://ui/MenuSauvegarde.gd")
+const CarteProScript = preload("res://ui/CarteEtRadarPro.gd")
+var vue_carte_pro : Control
+var minimap_pro : Control
+var _cd_mm := 0.0
 var save_panel : ColorRect
 var respawn_panel : ColorRect
 var tel_panel : ColorRect
@@ -56,6 +60,13 @@ func _ready():
     var rj = ColorRect.new(); rj.color = Color(1.0, 1.0, 1.0); rj.rect_position = Vector2(915, 180); rj.rect_size = Vector2(5, 5); add_child(rj)
     bar_armure = ProgressBar.new(); bar_armure.max_value = 100.0; bar_armure.rect_position = Vector2(16, 62); bar_armure.rect_size = Vector2(150, 14); bar_armure.percent_visible = false; bar_armure.modulate = Color(0.25, 0.65, 1.0); add_child(bar_armure)
     bar_veh = ProgressBar.new(); bar_veh.max_value = 100.0; bar_veh.rect_position = Vector2(176, 62); bar_veh.rect_size = Vector2(150, 14); bar_veh.percent_visible = false; bar_veh.modulate = Color(0.95, 0.65, 0.15); add_child(bar_veh)
+    minimap_pro = CarteProScript.new()
+    minimap_pro.est_grande_carte = false
+    minimap_pro.rect_position = Vector2(835, 100)
+    minimap_pro.rect_size = Vector2(165, 165)
+    minimap_pro.rect_clip_content = true
+    minimap_pro.charger_silhouette()
+    add_child(minimap_pro)
     creer_panneaux()
 
 func creer_jauge(pos : Vector2, w : float, coul : Color) -> ColorRect:
@@ -111,11 +122,22 @@ func creer_panneaux():
         dessin_m.set_script(scr_m)
         dessin_m.s = cur_m_s
         carte_panel.add_child(dessin_m)
+    vue_carte_pro = CarteProScript.new()
+    vue_carte_pro.est_grande_carte = true
+    vue_carte_pro.rect_size = Vector2(700, 440)
+    vue_carte_pro.tris_terre = minimap_pro.tris_terre
+    vue_carte_pro.tris_recifs = minimap_pro.tris_recifs
+    carte_panel.add_child(vue_carte_pro)
     ajouter_ville("📍 Îles Bélep", Vector2(75, 42)); ajouter_ville("📍 Koumac", Vector2(145, 88)); ajouter_ville("📍 [F2] Koné / Pouembout", Vector2(210, 160)); ajouter_ville("📍 Poindimié", Vector2(315, 155)); ajouter_ville("📍 [F3] Bourail", Vector2(295, 238)); ajouter_ville("📍 La Foa", Vector2(382, 272)); ajouter_ville("📍 Dumbéa / Païta", Vector2(432, 302)); ajouter_ville("📍 [F1] Nouméa (QG)", Vector2(455, 336)); ajouter_ville("📍 [F4] Île des Pins", Vector2(525, 396)); ajouter_ville("📍 Ouvéa", Vector2(448, 112)); ajouter_ville("📍 [F6] Lifou (Loyauté)", Vector2(505, 160)); ajouter_ville("📍 Maré", Vector2(582, 222))
     add_child(carte_panel)
     tel_panel = TelScript.new(); add_child(tel_panel)
     respawn_panel = RespawnScript.new(); add_child(respawn_panel)
     save_panel = SaveScript.new(); add_child(save_panel)
+
+func _process(delta):
+    if carte_panel != null and carte_panel.visible and vue_carte_pro != null: vue_carte_pro.update()
+    _cd_mm += delta
+    pass
 
 func _maj_bars(arm : float, vh : float):
     if bar_armure != null: bar_armure.value = clamp(arm, 0.0, 100.0)

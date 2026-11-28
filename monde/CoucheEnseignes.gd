@@ -8,7 +8,7 @@ var lieux_nommes := Array()
 var police : Font
 
 func charger(f_font : Font):
-    z_index = 3
+    z_index = 6
     police = f_font
     var lat0 := -22.3015; var lon0 := 166.4410; var ech := 1650000.0
     var f1 = File.new()
@@ -30,7 +30,7 @@ func charger(f_font : Font):
 
 func _draw():
     var m = get_parent().get_parent(); var j = m.joueur if m != null else null
-    var centre : Vector2 = centre_vue if j != null else Vector2.ZERO
+    var centre : Vector2 = j.position if j != null else centre_vue
     var z_act : float = j.cam.zoom.x if (j != null and j.cam != null) else 1.0
     var rayon_vue : float = max(25000.0, 2200.0 * z_act)
     var s_ico : float = clamp(z_act * 7.5, 16.0, 72.0)
@@ -54,3 +54,9 @@ func _draw():
             else:
                 draw_circle(pp, s_ico, Color(0.98, 0.96, 0.90)); draw_circle(pp, s_ico * 0.84, Color(0.92, 0.64, 0.12))
                 draw_rect(Rect2(pp - Vector2(s_ico * 0.48, s_ico * 0.36), Vector2(s_ico * 0.96, s_ico * 0.28)), Color(0.86, 0.20, 0.18))
+
+var _t_ens := 0.0
+func _process(d):
+    _t_ens += d
+    if _t_ens >= 0.4:
+        _t_ens = 0.0; update()
