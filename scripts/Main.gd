@@ -301,7 +301,7 @@ func _input(event):
                 var err = armes.tirer(joueur.position, (get_global_mouse_position() - joueur.position).normalized(), self, projectiles)
                 if err == "": audio.p_tir.play()
                 else: hud.msg_label.text = err
-        elif event.button_index == BUTTON_RIGHT and not hud.carte_panel.visible and not hud.aide_panel.visible and not joueur.en_vehicule:
+        elif false and event.button_index == BUTTON_RIGHT and not hud.aide_panel.visible and not joueur.en_vehicule:
             if outil == 1 and bois >= 10:
                 bois -= 10; constr.poser_structure(get_global_mouse_position(), joueur.position, 1); gagner_xp(15.0, "Palissade")
                 hud.msg_label.text = "🪵 Palissade construite ! (-10 bois)"
@@ -328,7 +328,8 @@ func _input(event):
             KEY_E:
                 var fait_e := false
                 for i in range(caisses.size() - 1, -1, -1):
-                    if joueur.position.distance_to(caisses[i].position) < 110.0:
+                    var c_pos : Vector2 = caisses[i].rect_position if caisses[i] is Control else caisses[i].position
+                    if joueur.position.distance_to(c_pos) < 125.0:
                         var t = caisses[i].get_meta("type") if caisses[i].has_meta("type") else (i % 5)
                         caisses[i].queue_free(); caisses.remove(i); fait_e = true
                         if t == 0: bois += 25

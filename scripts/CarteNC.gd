@@ -4,6 +4,7 @@ const GpuMesh = preload("res://monde/MaillageCarteGPU.gd")
 const GpuReseau = preload("res://monde/MaillageReseauGPU.gd")
 const NomsLayer = preload("res://monde/CalqueNomsGPU.gd")
 const TraficLayer = preload("res://monde/TraficVivantNC.gd")
+const EnseignesLayer = preload("res://monde/CoucheEnseignes.gd")
 
 var points_routes := []
 var points_cotes := []
@@ -223,6 +224,7 @@ func construire_carte(_chemin_json : String):
     GpuMesh.construire_mesh(self)
     GpuReseau.construire_reseau(self)
     var nl = NomsLayer.new(); add_child(nl); nl.initialiser(tous_pois)
+    var el = EnseignesLayer.new(); add_child(el); el.charger(police_carte); el.z_index = 5
     var tl = TraficLayer.new(); tl.z_index = 6; add_child(tl); tl.initialiser(routes_nationales + routes_locales)
     update()
 

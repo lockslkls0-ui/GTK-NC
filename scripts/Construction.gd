@@ -61,7 +61,7 @@ func _input(event):
             m.eco.z_index = 20; m.hud.msg_label.text = m.eco.poser_explosif(j.position); get_tree().set_input_as_handled()
         elif sc == KEY_H and m.hud.get("respawn_panel") != null:
             m.hud.respawn_panel.visible = not m.hud.respawn_panel.visible; get_tree().set_input_as_handled()
-        elif sc == KEY_E and not j.en_vehicule:
+        elif sc == KEY_E and not j.en_vehicule and _index_vise(j) != -1:
             var iv := _index_vise(j)
             if iv != -1 and constructions[iv]["type"] == 1:
                 constructions[iv]["ouvert"] = not constructions[iv]["ouvert"]

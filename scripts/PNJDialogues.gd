@@ -15,10 +15,10 @@ func creer_pnj_mission(pos : Vector2):
         pnj_actuel.queue_free()
     pnj_actuel = Polygon2D.new()
     pnj_actuel.position = pos + Vector2(60, 0)
-    pnj_actuel.z_index = 6
-    var veste = Polygon2D.new()
+    pnj_actuel.z_index = 9
+    var veste = Polygon2D.new(); veste.polygon = PoolVector2Array([Vector2(-9,-14), Vector2(9,-14), Vector2(11,14), Vector2(-11,14)]); veste.color = Color(0.95, 0.78, 0.18)
     pnj_actuel.add_child(veste)
-    var tete = Polygon2D.new()
+    var tete = Polygon2D.new(); tete.polygon = PoolVector2Array([Vector2(-6,-7), Vector2(8,-7), Vector2(8,7), Vector2(-6,7)]); tete.position = Vector2(4,0); tete.color = Color(0.30, 0.17, 0.10)
     pnj_actuel.add_child(tete)
     add_child(pnj_actuel)
 
@@ -29,8 +29,8 @@ func spawner_civils_a_secourir(pos : Vector2, nb : int):
     for i in range(nb):
         var civ = KinematicBody2D.new()
         civ.position = pos + Vector2(rand_range(-80, 80), rand_range(-80, 80))
-        civ.z_index = 6
-        var v = Polygon2D.new()
+        civ.z_index = 9
+        var v = Polygon2D.new(); v.polygon = PoolVector2Array([Vector2(-8,-12), Vector2(8,-12), Vector2(9,12), Vector2(-9,12)]); v.color = Color(0.22, 0.72, 0.92)
         civ.add_child(v)
         civ.set_meta("sauve", false)
         add_child(civ)
