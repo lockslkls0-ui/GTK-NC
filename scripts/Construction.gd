@@ -49,19 +49,12 @@ func _input(event):
             m.hud.msg_label.text = "🗼 Tourelle Auto (40 Bois) — Clic droit poser" if mode_build == 3 else "Construction off"
             get_tree().set_input_as_handled(); update()
         elif sc == KEY_R:
+            get_tree().set_input_as_handled()
             if mode_build == 1:
-                vertical = not vertical; get_tree().set_input_as_handled(); update()
+                vertical = not vertical; update()
             elif m.get("armes") != null:
-                var idx_a : int = m.armes.arme_idx
-                var ch : int = m.armes.chargeurs[idx_a]
-                var mx : int = m.armes.max_charg[idx_a]
-                if ch < mx and m.armes.reserve > 0:
-                    var pr : int = min(mx - ch, m.armes.reserve)
-                    m.armes.chargeurs[idx_a] = ch + pr
-                    m.armes.reserve -= pr
-                    m.hud.msg_label.text = "🔄 " + m.armes.noms[idx_a] + " rechargé (" + str(ch + pr) + "/" + str(mx) + " | Réserve : " + str(m.armes.reserve) + ")"
-                else:
-                    m.hud.msg_label.text = "🔫 " + m.armes.noms[idx_a] + " : " + str(ch) + "/" + str(mx) + " | Réserve : " + str(m.armes.reserve)
+                m.hud.msg_label.text = m.armes.recharger()
+                if m.get("audio") != null: m.audio.p_ok.play()
         elif (sc == KEY_F9 or sc == KEY_F5) and m.hud.get("save_panel") != null:
             m.hud.save_panel.rafraichir(); m.hud.save_panel.visible = not m.hud.save_panel.visible; get_tree().set_input_as_handled()
         elif sc == KEY_X and m.get("eco") != null:

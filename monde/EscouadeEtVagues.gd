@@ -4,6 +4,19 @@ var _t_vague := 28.0
 var _t_draw := 0.0
 var autos_convoi := Dictionary()
 
+func _input(event):
+    if event is InputEventKey and event.pressed and not event.echo and event.scancode == KEY_G:
+        var m = get_parent()
+        if m == null or m.get("joueur") == null or m.get("pop") == null: return
+        var pj : Vector2 = m.joueur.position
+        for a in m.pop.allies:
+            if is_instance_valid(a) and not a.get_meta("recrute") and a.position.distance_to(pj) < 420.0:
+                a.set_meta("recrute", true)
+                if a.has_meta("cible_feu"): a.remove_meta("cible_feu")
+                if m.get("audio") != null: m.audio.p_ok.play()
+                m.hud.msg_label.text = "🤝 Survivant recruté ! Il te suit, combat et montera en convoi [F]."
+                get_tree().set_input_as_handled(); return
+
 func _process(delta):
     var m = get_parent()
     if m == null or m.get("joueur") == null or m.get("pop") == null: return
