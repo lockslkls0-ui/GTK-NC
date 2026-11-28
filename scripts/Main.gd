@@ -1,5 +1,8 @@
 extends Node2D
 
+const AccueilScript = preload("res://ui/MenuAccueil.gd")
+var menu_accueil = null
+
 const EscouadeScript = preload("res://monde/EscouadeEtVagues.gd")
 
 const ApercuScript = preload("res://monde/ApercuConstruction.gd")
@@ -42,7 +45,7 @@ var vivres = 5
 var vague = 1
 var niveau := 1
 var xp := 0.0
-var xp_max := 500.0
+var xp_max := 120.0
 var armure := 35.0
 var armure_max := 100.0
 var tenue_nom := "Tenue Tribu"
@@ -58,18 +61,20 @@ var projectiles = []
 
 func _ready():
     randomize()
+    OS.low_processor_usage_mode = true
+    Engine.target_fps = 24
     carte = CarteScript.new(); add_child(carte); carte.construire_carte("res://carte_noumea.json")
     constr = ConstrScript.new(); add_child(constr)
     armes = ArmesScript.new(); add_child(armes)
     veh = VehiculesScript.new(); veh.z_index = 8; add_child(veh); veh.generer_flotte_et_stations()
     bat = BatimentsScript.new(); bat.z_index = 7; add_child(bat)
-    pop = PopScript.new(); pop.z_index = 9; add_child(pop); pop.peupler()
+    pop = PopScript.new(); pop.z_index = 9; add_child(pop); pop.peupler(); add_child(EscouadeScript.new())
     monde = MondeScript.new(); monde.z_index = 7; add_child(monde); monde.initialiser_trafic(carte.points_routes, carte.lieux_nommes, carte.tous_pois)
     audio = AudioScript.new(); add_child(audio)
     eco = EcoScript.new(); add_child(eco)
     pnj = PnjScript.new(); pnj.z_index = 9; add_child(pnj)
     chunks = ChunksScript.new(); add_child(chunks)
-    joueur = JoueurScript.new(); joueur.z_index = 10; add_child(joueur)
+    joueur = JoueurScript.new(); joueur.z_index = 10; joueur.pv = 100.0; joueur.pv_max = 100.0; add_child(joueur)
     joueur.position = monde.gps_vers_jeu(-21.2652, 165.6159)
     carte.peupler_zone_depart(joueur.position)
     for ic in range(10):
@@ -94,6 +99,8 @@ func _ready():
     pnj.creer_pnj_mission(monde.mission_cible)
     pnj.spawner_civils_a_secourir(monde.mission_cible, 3)
     hud.msg_label.text = "🌴 " + monde.mission_titre
+    menu_accueil = AccueilScript.new(); menu_accueil.main_ref = self; add_child(menu_accueil); menu_accueil.actualiser()
+    get_tree().paused = true
 
 func _toggle_aide():
     hud.aide_panel.visible = not hud.aide_panel.visible
@@ -135,7 +142,7 @@ func _physics_process(delta):
         nuit_overlay.color = Color(0.14, 0.18, 0.30) if est_nuit else Color(1, 1, 1)
         if not est_nuit: vague += 1
         else:
-            for _k in range(3 + vague): pop.spawn_ennemi(joueur.position, vague)
+            pass
             hud.msg_label.text = "🌙 LA NUIT TOMBE ! Des attaquants en noir approchent de ton camp !"
     if joueur.en_vehicule and joueur.vehicule_ref != null:
         var ess = joueur.vehicule_ref.get_meta("essence")
@@ -154,7 +161,7 @@ func _physics_process(delta):
         var err = armes.tirer(joueur.position, (get_global_mouse_position() - joueur.position).normalized(), self, projectiles)
         if err == "": audio.p_tir.play()
         else: hud.msg_label.text = err
-    if est_nuit:
+    if false and est_nuit:
         spawn_timer -= delta
         if spawn_timer <= 0:
             spawn_timer = max(1.2, 4.0 - vague * 0.3)
@@ -219,7 +226,7 @@ func gagner_xp(pts : float, raison : String = ""):
     while xp >= xp_max:
         xp -= xp_max
         niveau += 1
-        xp_max = round(xp_max * 1.25)
+        xp_max = round(xp_max * 1.45)
         joueur.pv_max += 10
         joueur.pv = joueur.pv_max
         armure = min(armure_max, armure + 20.0)
@@ -230,7 +237,7 @@ func gerer_combat(delta):
         var p = projectiles[i]; p.position += p.get_meta("dir") * 680.0 * delta; var v = p.get_meta("vie") - delta; p.set_meta("vie", v); var hit = false
         var msg_e = veh.verifier_explosion_pompe(p.position, pop.ennemis, joueur)
         if msg_e != "": hud.msg_label.text = msg_e; audio.p_boom.play(); hit = true
-        if p.color == Color(1.0, 0.2, 0.2) and p.position.distance_to(joueur.position) < 26.0:
+        if p.has_meta("ennemi") and p.position.distance_to(joueur.position) < 28.0:
             hit = true
             if joueur.en_vehicule and joueur.vehicule_ref != null:
                 if not joueur.vehicule_ref.has_meta("pv_veh"): joueur.vehicule_ref.set_meta("pv_veh", 100.0)
@@ -362,7 +369,7 @@ func _input(event):
             KEY_Y:
                 var gain_m = monde.valider_dialogue_pnj(joueur.position, hud)
                 if gain_m > 0:
-                    bois += gain_m; metal += gain_m / 2; vivres += 2; eco.argent += 2000; gagner_xp(250.0, "Mission accomplie")
+                    bois += gain_m; metal += gain_m / 2; vivres += 2; eco.argent += 2000; var nouv_a : String = armes.debloquer_prochaine_arme(); gagner_xp(140.0 + monde.mission_num * 30.0, "Mission + Arme : " + nouv_a)
                     pnj.creer_pnj_mission(monde.mission_cible); pnj.spawner_civils_a_secourir(monde.mission_cible, 3); audio.p_ok.play()
             999991:
                 if bois >= 3:

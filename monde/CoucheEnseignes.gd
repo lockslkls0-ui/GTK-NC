@@ -1,16 +1,12 @@
 extends Node2D
 
-var centre_vue := Vector2.ZERO
-var zoom_vue := 1.0
-
 var tous_pois := Array()
-var lieux_nommes := Array()
 var police : Font
+var _t_ens := 0.0
 
 func charger(f_font : Font):
-    z_index = 6
+    z_index = 14
     police = f_font
-    var lat0 := -22.3015; var lon0 := 166.4410; var ech := 1650000.0
     var f1 = File.new()
     if f1.open("res://pois_nc.json", File.READ) == OK:
         var j1 = JSON.parse(f1.get_as_text()); f1.close()
@@ -19,18 +15,16 @@ func charger(f_font : Font):
                 var item := Array()
                 item.append(Vector2(p["x"], p["y"])); item.append(str(p["cat"])); item.append(str(p["nom"]))
                 tous_pois.append(item)
-    var f2 = File.new()
-    if f2.open("res://nc_toponymes.json", File.READ) == OK:
-        var j2 = JSON.parse(f2.get_as_text()); f2.close()
-        if j2.error == OK and typeof(j2.result) == TYPE_DICTIONARY:
-            for t in j2.result.get("toponymes", Array()):
-                var pt := Vector2((float(t["lon"]) - lon0) * ech * cos(deg2rad(lat0)), -(float(t["lat"]) - lat0) * ech)
-                lieux_nommes.append({"nom": t["nom"], "cat": str(t.get("cat", "lieu")), "pos": pt})
     update()
+
+func _process(d):
+    _t_ens += d
+    if _t_ens >= 0.4:
+        _t_ens = 0.0; update()
 
 func _draw():
     var m = get_parent().get_parent(); var j = m.joueur if m != null else null
-    var centre : Vector2 = j.position if j != null else centre_vue
+    var centre : Vector2 = j.position if j != null else Vector2.ZERO
     var z_act : float = j.cam.zoom.x if (j != null and j.cam != null) else 1.0
     var rayon_vue : float = max(25000.0, 2200.0 * z_act)
     var s_ico : float = clamp(z_act * 7.5, 16.0, 72.0)
@@ -54,9 +48,3 @@ func _draw():
             else:
                 draw_circle(pp, s_ico, Color(0.98, 0.96, 0.90)); draw_circle(pp, s_ico * 0.84, Color(0.92, 0.64, 0.12))
                 draw_rect(Rect2(pp - Vector2(s_ico * 0.48, s_ico * 0.36), Vector2(s_ico * 0.96, s_ico * 0.28)), Color(0.86, 0.20, 0.18))
-
-var _t_ens := 0.0
-func _process(d):
-    _t_ens += d
-    if _t_ens >= 0.4:
-        _t_ens = 0.0; update()

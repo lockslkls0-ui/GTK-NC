@@ -12,6 +12,11 @@ var respawn_panel : ColorRect
 var tel_panel : ColorRect
 var bar_armure : ProgressBar
 var bar_veh : ProgressBar
+var lbl_pv : Label
+var lbl_en : Label
+var lbl_ess : Label
+var lbl_arm : Label
+var lbl_veh : Label
 
 var barre_pv : ColorRect
 var barre_energie : ColorRect
@@ -60,6 +65,11 @@ func _ready():
     var rj = ColorRect.new(); rj.color = Color(1.0, 1.0, 1.0); rj.rect_position = Vector2(915, 180); rj.rect_size = Vector2(5, 5); add_child(rj)
     bar_armure = ProgressBar.new(); bar_armure.max_value = 100.0; bar_armure.rect_position = Vector2(16, 62); bar_armure.rect_size = Vector2(150, 14); bar_armure.percent_visible = false; bar_armure.modulate = Color(0.25, 0.65, 1.0); add_child(bar_armure)
     bar_veh = ProgressBar.new(); bar_veh.max_value = 100.0; bar_veh.rect_position = Vector2(176, 62); bar_veh.rect_size = Vector2(150, 14); bar_veh.percent_visible = false; bar_veh.modulate = Color(0.95, 0.65, 0.15); add_child(bar_veh)
+    lbl_pv = Label.new(); lbl_pv.rect_position = Vector2(28, 17); add_child(lbl_pv)
+    lbl_en = Label.new(); lbl_en.rect_position = Vector2(231, 17); add_child(lbl_en)
+    lbl_ess = Label.new(); lbl_ess.rect_position = Vector2(434, 17); add_child(lbl_ess)
+    lbl_arm = Label.new(); lbl_arm.rect_position = Vector2(22, 61); add_child(lbl_arm)
+    lbl_veh = Label.new(); lbl_veh.rect_position = Vector2(182, 61); add_child(lbl_veh)
     minimap_pro = CarteProScript.new()
     minimap_pro.est_grande_carte = false
     minimap_pro.rect_position = Vector2(835, 100)
@@ -126,7 +136,6 @@ func creer_panneaux():
     vue_carte_pro.est_grande_carte = true
     vue_carte_pro.rect_size = Vector2(700, 440)
     vue_carte_pro.tris_terre = minimap_pro.tris_terre
-    vue_carte_pro.tris_recifs = minimap_pro.tris_recifs
     carte_panel.add_child(vue_carte_pro)
     ajouter_ville("📍 Îles Bélep", Vector2(75, 42)); ajouter_ville("📍 Koumac", Vector2(145, 88)); ajouter_ville("📍 [F2] Koné / Pouembout", Vector2(210, 160)); ajouter_ville("📍 Poindimié", Vector2(315, 155)); ajouter_ville("📍 [F3] Bourail", Vector2(295, 238)); ajouter_ville("📍 La Foa", Vector2(382, 272)); ajouter_ville("📍 Dumbéa / Païta", Vector2(432, 302)); ajouter_ville("📍 [F1] Nouméa (QG)", Vector2(455, 336)); ajouter_ville("📍 [F4] Île des Pins", Vector2(525, 396)); ajouter_ville("📍 Ouvéa", Vector2(448, 112)); ajouter_ville("📍 [F6] Lifou (Loyauté)", Vector2(505, 160)); ajouter_ville("📍 Maré", Vector2(582, 222))
     add_child(carte_panel)
@@ -144,11 +153,16 @@ func _maj_bars(arm : float, vh : float):
     if bar_veh != null:
         bar_veh.visible = vh > 0.0
         bar_veh.value = clamp(vh, 0.0, 100.0)
+    if lbl_arm != null: lbl_arm.text = "🛡️ " + str(int(arm)) + "%"
+    if lbl_veh != null: lbl_veh.visible = vh > 0.0; lbl_veh.text = "🚗 " + str(int(vh)) + "%"
 
 func maj_texte(pv : float, en : float, ess : float, est_nuit : bool, vague : int, bois : int, metal : int, bidons : int, vivres : int, arme_nom : String, ch : int, res : int, nb_al : int, veh_nom : String):
     barre_pv.rect_size.x = 190.0 * clamp(pv / 100.0, 0.0, 1.0)
     barre_energie.rect_size.x = 190.0 * clamp(en / 100.0, 0.0, 1.0)
     barre_essence.rect_size.x = 190.0 * clamp(ess / 100.0, 0.0, 1.0)
+    if lbl_pv != null: lbl_pv.text = "❤️ Santé : " + str(int(pv)) + "%"
+    if lbl_en != null: lbl_en.text = "⚡ Énergie : " + str(int(en)) + "%"
+    if lbl_ess != null: lbl_ess.text = "⛽ Essence : " + str(int(ess)) + "%"
     var moment = "🌙 NUIT — VAGUE " + str(vague) if est_nuit else "☀️ JOUR — VAGUE " + str(vague)
     var auto_txt = "🚙 " + veh_nom + " (" + str(int(ess)) + "%)" if veh_nom != "" else "🏃 À pied ([F] Véhicule)"
     hud_label.text = "❤️ PV: " + str(int(pv)) + " | ⚡ Énergie: " + str(int(en)) + " | ⛽ Essence: " + str(int(ess)) + "% | " + moment + "\n🔫 " + arme_nom + " (" + str(ch) + " | Rés: " + str(res) + ") [Tab/R/B] | 🤝 Escouade: " + str(nb_al) + " | " + auto_txt + "\n🪵 Bois: " + str(bois) + " | 🔩 Métal: " + str(metal) + " | 🛢️ Bidons: " + str(bidons) + " | 🥫 Vivres: " + str(vivres) + " | [L] Échelle [V] Bâtiment [E] Fouiller"

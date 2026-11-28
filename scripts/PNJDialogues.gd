@@ -15,7 +15,7 @@ func creer_pnj_mission(pos : Vector2):
         pnj_actuel.queue_free()
     pnj_actuel = Polygon2D.new()
     pnj_actuel.position = pos + Vector2(60, 0)
-    pnj_actuel.z_index = 9
+    pnj_actuel.z_index = 15
     var veste = Polygon2D.new(); veste.polygon = PoolVector2Array([Vector2(-9,-14), Vector2(9,-14), Vector2(11,14), Vector2(-11,14)]); veste.color = Color(0.95, 0.78, 0.18)
     pnj_actuel.add_child(veste)
     var tete = Polygon2D.new(); tete.polygon = PoolVector2Array([Vector2(-6,-7), Vector2(8,-7), Vector2(8,7), Vector2(-6,7)]); tete.position = Vector2(4,0); tete.color = Color(0.30, 0.17, 0.10)

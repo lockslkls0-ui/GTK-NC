@@ -39,7 +39,10 @@ func peupler():
         add_child(a); allies.append(a)
 
 func _physics_process(_delta):
+    var m = get_parent()
+    var pj : Vector2 = m.joueur.position if (m != null and m.get("joueur") != null) else Vector2.ZERO
     for a in allies:
+        if is_instance_valid(a) and not a.get_meta("recrute") and a.position.distance_squared_to(pj) > 6250000.0: continue
         if is_instance_valid(a) and not a.get_meta("recrute"):
             if a.has_meta("cible_feu"):
                 var pf : Vector2 = a.get_meta("cible_feu")

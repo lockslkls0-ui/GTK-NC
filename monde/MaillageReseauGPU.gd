@@ -2,7 +2,7 @@ extends Node2D
 
 static func _quad(st : SurfaceTool, pa : Vector2, pb : Vector2, demi : float, col : Color):
     var dir := (pb - pa)
-    if dir.length_squared() < 1.0: return
+    if dir.length_squared() < 36.0: return
     var n := Vector2(-dir.y, dir.x).normalized() * demi
     var v0 := Vector3(pa.x - n.x, pa.y - n.y, 0.0); var v1 := Vector3(pa.x + n.x, pa.y + n.y, 0.0)
     var v2 := Vector3(pb.x + n.x, pb.y + n.y, 0.0); var v3 := Vector3(pb.x - n.x, pb.y - n.y, 0.0)
@@ -36,7 +36,7 @@ static func construire_reseau(parent : Node2D):
             if est_capitale or est_grand_axe:
                 _quad(st_trot, pa, pb, 43.0, c_trot)
             _quad(st_r, pa, pb, 36.0, c_rt)
-            if est_capitale or est_grand_axe:
+            if est_capitale:
                 var dir_act := (pb - pa).normalized()
                 var en_virage : bool = dir_prec != Vector2.ZERO and dir_act.dot(dir_prec) < 0.965
                 if en_virage:

@@ -37,13 +37,13 @@ func initialiser_trafic(pts_routes : Array, lieux_carte : Array = [], liste_pois
     balise_sol = Polygon2D.new()
     balise_sol.polygon = PoolVector2Array([Vector2(-65,-65), Vector2(65,-65), Vector2(65,65), Vector2(-65,65)])
     balise_sol.color = Color(1.0, 0.85, 0.12, 0.45)
-    balise_sol.z_index = 4
+    balise_sol.z_index = 25
     add_child(balise_sol)
 
     fleche_boussole = Polygon2D.new()
-    fleche_boussole.polygon = PoolVector2Array([Vector2(48,-9), Vector2(74,0), Vector2(48,9)])
+    fleche_boussole.polygon = PoolVector2Array([Vector2(56,-14), Vector2(92,0), Vector2(56,14)])
     fleche_boussole.color = Color(1.0, 0.88, 0.15)
-    fleche_boussole.z_index = 14
+    fleche_boussole.z_index = 30
     add_child(fleche_boussole)
 
     eclaireur_pnj = Polygon2D.new()

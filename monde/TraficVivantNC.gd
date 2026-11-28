@@ -47,14 +47,23 @@ func _couper_arbre(m, j) -> bool:
             update(); return true
     return false
 
-func _unhandled_input(event):
+func _ready():
+    z_index = 4
+
+func _input(event):
     var m = get_parent().get_parent()
     var j = m.get("joueur") if m != null else null
     if j == null or j.en_vehicule: return
     if event is InputEventMouseButton and event.pressed and event.button_index == BUTTON_LEFT:
-        if _couper_arbre(m, j): get_tree().set_input_as_handled()
+        if _couper_arbre(m, j):
+            m.gagner_xp(12.0, "Récolte de bois")
+            if m.get("audio") != null: m.audio.p_ok.play()
+            get_tree().set_input_as_handled()
     elif event is InputEventKey and event.pressed and not event.echo and event.scancode == KEY_C:
-        if _couper_arbre(m, j): get_tree().set_input_as_handled()
+        if _couper_arbre(m, j):
+            m.gagner_xp(12.0, "Récolte de bois")
+            if m.get("audio") != null: m.audio.p_ok.play()
+            get_tree().set_input_as_handled()
 
 func _process(delta):
     _cd_maj += delta
