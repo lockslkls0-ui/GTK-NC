@@ -13,6 +13,7 @@ var lum_feu : Light2D
 var modulate_nuit : CanvasModulate
 var torche_active := true
 var _t_surv := 15.0
+var _cd_lum := 0.0
 var _init_fait := false
 
 func _tex_cone() -> ImageTexture:
@@ -75,7 +76,7 @@ func _input(event):
             if m.bois >= 3:
                 m.bois -= 3
                 var pf : Vector2 = m.joueur.position + Vector2(36, 0).rotated(m.joueur.corps_visuel.rotation)
-                feux_vis.append({"pos": pf, "t": 300.0})
+                feux_vis.append({"pos": pf, "t": 300.0, "nb": 0})
                 lum_feu.enabled = true; lum_feu.position = pf
                 m.hud.msg_label.text = "🔥 Feu de camp allumé au briquet (-3 bois) ! Attire les survivants alliés."
             else:
@@ -110,19 +111,21 @@ func _process(delta):
         lum_phare_g.enabled = false; lum_phare_d.enabled = false
         lum_torche.enabled = torche_active
         lum_torche.position = pj; lum_torche.rotation = (get_global_mouse_position() - pj).angle()
-    if m.constr.a_un_abri:
-        lum_feu.enabled = true; lum_feu.position = m.constr.dernier_abri + Vector2(0, 62)
+    if feux_vis.size() > 0:
+        var dernier_feu : Vector2 = feux_vis.back()["pos"]
+        lum_feu.enabled = true; lum_feu.position = dernier_feu
         _t_surv += delta
-        if _t_surv >= 20.0:
+        if _t_surv >= 14.0:
             _t_surv = 0.0
-            if m.pop.allies.size() < 60:
+            if feux_vis.back().get("nb", 0) < 4:
                 var s = KinematicBody2D.new()
-                s.position = m.constr.dernier_abri + Vector2(rand_range(-65, 65), 65)
-                s.add_child(m.pop.creer_humain(Color(0.95, 0.78, 0.25)))
+                var ang_s := rand_range(0, TAU)
+                s.position = dernier_feu + Vector2(cos(ang_s), sin(ang_s)) * 580.0
+                s.add_child(m.pop.creer_humain(Color(0.25, 0.75, 0.45)))
                 var col = CollisionShape2D.new(); var sh = CircleShape2D.new(); sh.radius = 15.0; col.shape = sh; s.add_child(col)
-                s.set_meta("recrute", false); s.set_meta("cd", 0.0); s.set_meta("dir", Vector2(1, 0))
+                s.set_meta("recrute", false); s.set_meta("cd", 0.0); s.set_meta("dir", Vector2(1, 0)); feux_vis.back()["nb"] = feux_vis.back().get("nb", 0) + 1; s.set_meta("cible_feu", dernier_feu)
                 m.pop.add_child(s); m.pop.allies.append(s)
-                m.hud.msg_label.text = "🔥 Un survivant attiré par ton feu de camp est arrivé ([G] pour recruter) !"
+                m.hud.msg_label.text = "🔥 Un survivant aperçoit la lueur de ton feu de camp au loin et arrive ([G] pour recruter) !"
     for i in range(bombes_vis.size() - 1, -1, -1):
         bombes_vis[i]["t"] -= delta
         if bombes_vis[i]["t"] <= 0.0:

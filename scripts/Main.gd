@@ -1,5 +1,7 @@
 extends Node2D
 
+const EscouadeScript = preload("res://monde/EscouadeEtVagues.gd")
+
 const ApercuScript = preload("res://monde/ApercuConstruction.gd")
 var LumieresScript = preload("res://monde/EclairageNuitNC.gd")
 
@@ -128,10 +130,13 @@ func _physics_process(delta):
         if hud.get("respawn_panel") != null and not hud.respawn_panel.visible: hud.respawn_panel.visible = true
         return
     temps_cycle += delta
-    if temps_cycle >= 180.0:
+    if temps_cycle >= 75.0:
         temps_cycle = 0.0; est_nuit = not est_nuit; joueur.lampe.visible = est_nuit
         nuit_overlay.color = Color(0.14, 0.18, 0.30) if est_nuit else Color(1, 1, 1)
         if not est_nuit: vague += 1
+        else:
+            for _k in range(3 + vague): pop.spawn_ennemi(joueur.position, vague)
+            hud.msg_label.text = "🌙 LA NUIT TOMBE ! Des attaquants en noir approchent de ton camp !"
     if joueur.en_vehicule and joueur.vehicule_ref != null:
         var ess = joueur.vehicule_ref.get_meta("essence")
         if ess <= 0.0:
@@ -141,7 +146,7 @@ func _physics_process(delta):
             joueur.vehicule_ref.set_meta("vit", joueur.vehicule_ref.get_meta("vit_max"))
             if Input.is_key_pressed(KEY_W) or Input.is_key_pressed(KEY_Z) or Input.is_key_pressed(KEY_S) or Input.is_key_pressed(KEY_UP) or Input.is_key_pressed(KEY_DOWN) or Input.is_key_pressed(KEY_LEFT) or Input.is_key_pressed(KEY_RIGHT):
                 joueur.vehicule_ref.set_meta("essence", max(0.0, ess - 0.25 * delta))
-    for fc in lumieres.feux_camp:
+    for fc in lumieres.feux_vis:
         if joueur.position.distance_to(fc["pos"]) < 150.0:
             joueur.energie = min(joueur.energie_max, joueur.energie + 18.0 * delta)
     if armes.cooldown > 0: armes.cooldown -= delta
@@ -206,7 +211,7 @@ func _physics_process(delta):
         hud.xp_bar.max_value = xp_max
         hud.xp_bar.value = xp
         hud.lbl_stats_perso.text = "Niv." + str(niveau) + " (" + str(int(xp)) + "/" + str(int(xp_max)) + " XP) | 🛡️ Armure [" + tenue_nom + "]: " + str(int(armure)) + "%" + pv_veh_txt
-    if hud.has_method("_maj_bars"): hud._maj_bars(armure, float(joueur.vehicule_ref.get_meta("pv_veh")) if (joueur.en_vehicule and joueur.vehicule_ref != null and joueur.vehicule_ref.has_meta("pv_veh")) else 0.0)
+    hud._maj_bars(armure, float(joueur.vehicule_ref.get_meta("pv_veh")) if (joueur.en_vehicule and joueur.vehicule_ref != null and joueur.vehicule_ref.has_meta("pv_veh")) else 0.0)
     hud.maj_texte(joueur.pv, joueur.energie, ess_act, est_nuit, vague, bois, metal, bidons, vivres, armes.noms[armes.arme_idx], armes.chargeurs[armes.arme_idx], armes.reserve, nb_al, nom_v)
 
 func gagner_xp(pts : float, raison : String = ""):
@@ -260,7 +265,7 @@ func gerer_combat(delta):
             projectiles.remove(i)
     for k in range(pop.ennemis.size() - 1, -1, -1):
         var en2 = pop.ennemis[k]; var cd = en2.get_meta("cd") - delta; en2.set_meta("cd", cd); en2.look_at(joueur.position)
-        en2.move_and_slide((joueur.position - en2.position).normalized() * (165.0 + vague * 10.0))
+        en2.move_and_slide((joueur.position - en2.position).normalized() * (245.0 + vague * 15.0))
         if en2.get_meta("arme") and en2.position.distance_to(joueur.position) < 420.0 and cd <= 0:
             en2.set_meta("cd", 1.8)
             armes.creer_balle(en2.position, (joueur.position - en2.position).normalized(), 1.0, 10, Color(1.0, 0.2, 0.2), self, projectiles)
@@ -275,7 +280,7 @@ func gerer_combat(delta):
             joueur.vehicule_ref.set_meta("pv_veh", pv_v2)
             hud.msg_label.text = "⚠️ Un assaillant frappe ton véhicule à l'arrêt ! Vie véhicule : " + str(int(pv_v2)) + "%"
             continue
-        if not joueur.en_vehicule and not bat.sur_toit and en2.position.distance_to(joueur.position) < 34.0 and cd <= 0:
+        if not joueur.en_vehicule and not bat.sur_toit and en2.position.distance_to(joueur.position) < 46.0 and cd <= 0:
             en2.set_meta("cd", 1.0)
             joueur.pv = max(0.0, joueur.pv - 12.0)
 
@@ -381,8 +386,8 @@ func _input(event):
                             hud.msg_label.text = "🚙 Véhicule : " + v.get_meta("nom"); break
             KEY_G:
                 for a in pop.allies:
-                    if not a.get_meta("recrute") and joueur.position.distance_to(a.position) < 260.0:
-                        a.set_meta("recrute", true); audio.p_ok.play(); gagner_xp(30.0, "Cousin recruté")
+                    if not a.get_meta("recrute") and joueur.position.distance_to(a.position) < 380.0:
+                        a.set_meta("recrute", true); if a.has_meta("cible_feu"): a.remove_meta("cible_feu"); audio.p_ok.play(); gagner_xp(30.0, "Cousin recruté")
                         hud.msg_label.text = "🤝 Cousin / Allié recruté dans ton équipe !"; break
             KEY_P:
                 hud.tel_panel.visible = not hud.tel_panel.visible

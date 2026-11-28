@@ -58,6 +58,8 @@ func tirer(origine : Vector2, dir : Vector2, parent_node : Node2D, liste_proj : 
 
 func creer_balle(pos : Vector2, dir : Vector2, vie : float, degats : int, coul : Color, parent_node : Node2D, liste_proj : Array):
     var p = Polygon2D.new()
+    p.polygon = PoolVector2Array([Vector2(-10, -2.5), Vector2(12, -2.5), Vector2(12, 2.5), Vector2(-10, 2.5)])
+    p.color = coul
     p.position = pos
     p.rotation = dir.angle()
     p.z_index = 25
